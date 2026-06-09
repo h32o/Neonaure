@@ -101,6 +101,7 @@ class MainWindow(QMainWindow):
             print("Timer will be hidden.")
             
 
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
