@@ -23,6 +23,9 @@ class Grid:
     def get_cell(self,coord : tuple) -> Cell:
         return self._cell[coord[0]][coord[1]]
     
+    def get_pattern_dict(self) -> dict:
+        return self._patterns
+    
     def get_pattern(self,pattern_id : int) -> Pattern:
         return self._patterns[pattern_id]
     
@@ -68,6 +71,9 @@ class Grid:
         
         return error_list
     
+    def set_value(self,coord : tuple, valeur : int) ->None:
+        self._cell[coord[0]][coord[1]].set_value(valeur)
+        
     def reset_user_values(self) -> None:
         for row in range(self._row):
             for col in range(self._column):
@@ -104,7 +110,7 @@ class Grid:
             
         return pattern_border
     
-    def from_json(self, path : str) : 
+    def from_json(self, path : str) -> None: 
         grid_dict : dict = JSONLoader.load_json(path)
         
         max_row : int = 0
@@ -139,7 +145,7 @@ class Grid:
             triplets = []
             
             for cell in pattern.cells:
-                val = cell.get_value() if cell.get_given else 0
+                val = cell.get_value() if cell.get_given() else 0
                 triplets.append([cell.get_row(), cell.get_column(),val])
                 
             grid_dict[pattern_key] = triplets
