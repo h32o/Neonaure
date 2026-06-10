@@ -56,7 +56,8 @@ Neonaure
 - Intervenants : **R. Cozot**, **J. Hermilier**
 
 <br>
-<hr color = "red">
+<hr style="border: none; height: 1px; background-color: red; border-top: 1px solid red;">
+
 
 <p align="center">
   <img src="assets/misc/images/iutlittoral-logo.png" height="100" title="IUT">
