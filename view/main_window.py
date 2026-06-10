@@ -9,6 +9,7 @@ class MainWindow(QMainWindow):
     signal_reset_grid = pyqtSignal()
     signal_solve_grid = pyqtSignal()
     signal_undo = pyqtSignal()
+    signal_cell_changed = pyqtSignal(int, int, str)
 
     def __init__(self):
         super().__init__()
@@ -114,7 +115,9 @@ class MainWindow(QMainWindow):
                 self.cells[(line, column)] = cell
 
     def on_cell_changed(self, text):
-        pass
+        cell = self.sender()
+        if cell:
+            self.signal_cell_changed.emit(cell.row, cell.column, text)
 
     def show_rules(self):
         rules_box = QMessageBox(self)
@@ -186,6 +189,7 @@ class MainWindow(QMainWindow):
         else:
             cell.setStyleSheet("background-color: white;")
 
+   
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
