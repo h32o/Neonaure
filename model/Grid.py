@@ -1,6 +1,6 @@
 from .Cell import Cell
 from .Pattern import Pattern
-from functools import JSONLoader
+from ..functools.json_handler import JSONLoader
 
 class Grid:
     
@@ -68,6 +68,9 @@ class Grid:
         
         return error_list
     
+    def set_value(self,coord : tuple, valeur : int) ->None:
+        self._cell[coord[0]][coord[1]].set_value(valeur)
+        
     def reset_user_values(self) -> None:
         for row in range(self._row):
             for col in range(self._column):
@@ -139,7 +142,7 @@ class Grid:
             triplets = []
             
             for cell in pattern.cells:
-                val = cell.get_value() if cell.get_given else 0
+                val = cell.get_value() if cell.get_given() else 0
                 triplets.append([cell.get_row(), cell.get_column(),val])
                 
             grid_dict[pattern_key] = triplets
