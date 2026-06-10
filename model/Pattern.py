@@ -1,4 +1,4 @@
-from Neonaure.Cell import Cell
+from .Cell import Cell
 
 
 class Pattern():
@@ -8,7 +8,7 @@ class Pattern():
     classe motif : réuni plusieurs case dans un motif. Les nombres
     """
 
-    def init(self,motif_id : int,case : list[Cell]):
+    def __init__(self,motif_id : int,case : list[Cell]):
         self._id : int = motif_id
         self.cells : list[Cell] = case
 

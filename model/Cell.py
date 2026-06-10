@@ -22,7 +22,7 @@ class Cell():
 
 
     """
-    def init(self,row : int,column :int,val : int,motif_id : int):
+    def __init__(self,row : int,column :int,val : int,motif_id : int):
 
         self._row : int = row
         self._column : int = column
