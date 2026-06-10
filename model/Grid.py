@@ -1,7 +1,6 @@
-from .Cell import Cell
-from .Pattern import Pattern
-from ..functools.json_handler import JSONLoader
-
+from model.Cell import Cell
+from model.Pattern import Pattern
+import json
 class Grid:
     
     """
@@ -35,7 +34,8 @@ class Grid:
             for y in range(col - 1,col + 2):
                 if x >= 0 and x < self._row:
                     if y >= 0 and y < self._column:
-                        Cell_list.append(self._cell[x][y])
+                        if x != row or y != col:
+                            Cell_list.append(self._cell[x][y])
         return Cell_list
                     
     def check_neighbor_constraint(self,row : int,col :int) -> bool:
@@ -53,6 +53,13 @@ class Grid:
         return False if self._patterns[pattern_id].has_duplicate() else True
     
     def is_solved(self) -> bool:
+        for row in range(self._row):
+            for col in range(self._column):
+                if self.get_cell((row,col)).get_value() == 0:
+                    return False
+                if not self.check_neighbor_constraint(row,col):
+                    return False
+                
         for i in self._patterns.keys():
             if self._patterns[i].has_duplicate():
                 return False
@@ -111,7 +118,10 @@ class Grid:
         return pattern_border
     
     def from_json(self, path : str) -> None: 
-        grid_dict : dict = JSONLoader.load_json(path)
+        """grid_dict : dict = JSONLoader.load_json(path)"""
+        
+        with open(path, "r", encoding="utf-8") as f:
+            grid_dict = json.load(f)
         
         max_row : int = 0
         max_col : int = 0
@@ -150,6 +160,8 @@ class Grid:
                 
             grid_dict[pattern_key] = triplets
             
-        JSONLoader.save_json(path, grid_dict)
+        """JSONLoader.save_json(path, grid_dict)"""
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(grid_dict, f, ensure_ascii=False, indent=2)
         
 
