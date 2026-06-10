@@ -1,6 +1,6 @@
 from .Cell import Cell
 from .Pattern import Pattern
-from functools import JSONLoader
+from tools.json_handler import JSONLoader
 
 class Grid:
     
