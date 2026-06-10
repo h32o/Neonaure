@@ -1,4 +1,4 @@
-class Case():
+class Cell():
 
     """Classe représentant une case
 
@@ -34,6 +34,7 @@ class Case():
     def is_empty(self) -> bool:
         return False if self._value != 0 else True
 
+    
     def get_row(self) -> int:
         return self._row
 
@@ -58,5 +59,5 @@ class Case():
     def set_given(self,boolean : bool) -> None:
         self._given = boolean
 
-    def str(self) -> None:
-        return "self.get_row(),self.get_column(),self.get_given(),self.get_motif_id(),self.get_value()"
+    def __str__(self) -> str:
+        return f"{self.get_row()},{self.get_column()},{self.get_given()},{self.get_motif_id()},{self.get_value()}"
