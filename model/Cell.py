@@ -18,7 +18,7 @@ class Cell():
     get_column : retourne le numéro de la colonne de la case 
     get_value : retourne la valeur de la case
     get_given : retourne True si une valeur était déja inscrite sinon False
-    get motif_id : retourne le numéro du motif auquelle la case appartient
+    get pattern_id : retourne le numéro du motif auquelle la case appartient
 
 
     """
@@ -47,13 +47,13 @@ class Cell():
     def get_given(self) -> bool:
         return self._given
 
-    def get_motif_id(self) -> int:
+    def get_pattern_id(self) -> int:
         return self._motif_id
 
     def set_value(self,values : int) -> None:
         self._value = values
 
-    def set_motif_if(self,id : int) -> None:
+    def set_pattern_id(self,id : int) -> None:
         self._motif_id = id
 
     def set_given(self,boolean : bool) -> None:
