@@ -50,5 +50,20 @@ class JSONLoader:
         True (Save sucessful)
         False (Failed)
         """
-        pass
+        
+        # Check if the diectory doesn't exist, if it doesn't create it if permissions allows
+        directory = os.path.dirname(os.path.abspath(file_path)) #! Get absolute path to check for existance of directory
+        if directory and not os.path.exists(directory):
+            try:
+                os.makedirs(directory)
+            except OSError as e:
+                return False
 
+        try:
+            # Use 'w' mode for writing/overwriting the file
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=4, ensure_ascii=False)
+            print(f"Successfully saved data to: {os.path.abspath(file_path)}")
+            return True
+        except Exception as e :
+            logging.error(e)

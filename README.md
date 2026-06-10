@@ -10,8 +10,36 @@ Le **Néonaure** est inspiré du Sudoku joué généralement sur une grille 8x8 
 
 ## Architecture — MVC
 
-```
+**Architecture approximative**
 
+```
+Neonaure
+├── assets
+│   └── misc
+│       └── images
+│ 
+├── controller
+│   ├── controller.py
+│   └── __init__.py
+│ 
+├── view
+│   ├── main_window.py
+│   └── __init__.py
+│
+├── examples
+│   ├── grille1.json
+│   ├── grille2.json
+│   ├── grille3.json
+│   ├── grille4.json
+│   ├── grille5.json
+│   ├── grille6.json
+│   ├── grille7.json
+│   ├── grille8.json
+│   └── grille9.json
+├── functools
+│   └── json_handler.py
+├── main.py
+└── README.md
 ```
 
 ## Équipe
@@ -26,3 +54,11 @@ Le **Néonaure** est inspiré du Sudoku joué généralement sur une grille 8x8 
 
 - Responsable : **L. Conoir**
 - Intervenants : **R. Cozot**, **J. Hermilier**
+
+<br>
+<hr color = "red">
+
+<p align="center">
+  <img src="assets/misc/images/iutlittoral-logo.png" height="100" title="IUT">
+  <img src="assets/misc/images/Logo_Université_du_Littoral_Côte_d'Opale.png" height="100" title="ULCO">
+</p>
