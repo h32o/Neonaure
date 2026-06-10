@@ -1,1 +1,1 @@
-from .Grid import Grid as Model
+from model.Grid import Grid as Model

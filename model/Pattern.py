@@ -1,4 +1,4 @@
-from .Cell import Cell
+from model.Cell import Cell
 
 
 class Pattern():
@@ -31,7 +31,9 @@ class Pattern():
     def filled_values(self) -> list:
         return [cell.get_value() for cell in self.cells if not cell.is_empty()]
 
-
+    def get_cells(self) -> list[Cell]:
+        return self.cells
+    
     def is_complete(self) -> bool:
         return self.current_values == self.expected_values
 
