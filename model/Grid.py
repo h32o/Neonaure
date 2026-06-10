@@ -1,5 +1,5 @@
-from Neonaure.Cell import Cell
-from Neonaure.Pattern import Pattern
+from .Cell import Cell
+from .Pattern import Pattern
 from functools import JSONLoader
 
 class Grid:
@@ -87,7 +87,7 @@ class Grid:
             for col in range(self._column):
                 self._cell[row][col].set_value(state[(row,col)][0])
                 self._cell[row][col].set_given(state[(row,col)][1])
-                self._cell[row][col].set_pattern_if(state[(row,col)][2])
+                self._cell[row][col].set_pattern_id(state[(row,col)][2])
                 
     def get_pattern_border(self, row: int, col: int) -> dict:
         pattern_border = {}
