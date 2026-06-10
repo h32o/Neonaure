@@ -24,12 +24,12 @@ class Pattern():
 
     @property
     def current_values(self) -> set:
-        return {cell.get_value() for cell in self.cells if not cell.is_empty}
+        return {cell.get_value() for cell in self.cells if not cell.is_empty()}
 
 
     @property
     def filled_values(self) -> list:
-        return [cell.get_value() for cell in self.cells if not cell.is_empty]
+        return [cell.get_value() for cell in self.cells if not cell.is_empty()]
 
 
     def is_complete(self) -> bool:
@@ -51,7 +51,7 @@ class Pattern():
 
     def add_cell(self, cell) -> None:
         self.cells.append(cell)
-        cell.set_modif_id(self._id)
+        cell.set_pattern_id(self._id)
 
 
     def get_cell_positions(self) -> list:
