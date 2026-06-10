@@ -23,6 +23,9 @@ class Grid:
     def get_cell(self,coord : tuple) -> Cell:
         return self._cell[coord[0]][coord[1]]
     
+    def get_pattern_dict(self) -> dict:
+        return self._patterns
+    
     def get_pattern(self,pattern_id : int) -> Pattern:
         return self._patterns[pattern_id]
     
@@ -107,7 +110,7 @@ class Grid:
             
         return pattern_border
     
-    def from_json(self, path : str) : 
+    def from_json(self, path : str) -> None: 
         grid_dict : dict = JSONLoader.load_json(path)
         
         max_row : int = 0
