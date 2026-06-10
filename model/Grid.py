@@ -105,9 +105,45 @@ class Grid:
         return pattern_border
     
     def from_json(self, path : str) : 
-        return JSONLoader.load_json(path)
-
+        grid_dict : dict = JSONLoader.load_json(path)
+        
+        max_row : int = 0
+        max_col : int = 0
+        for triplets in grid_dict.values():
+            for triplet in triplets:
+                max_row = max(max_row,triplet[0])
+                max_col = max(max_col,triplet[1])
+        
+        self._row = max_row + 1
+        self._column = max_col + 1
+        
+        self._cell = [[None for truc in range(self._column)] for elt in range(self._row)]
+        self._patterns = {}
+        
+        for pattern_key, triplets in grid_dict.items():
+            pattern_id = int(pattern_key[len("motif"):])
+            pattern = Pattern(pattern_id,[])
+            self._patterns[pattern_id] = pattern
+            
+            for triplet in triplets:
+                row, col, val = triplet[0], triplet[1], triplet[2]
+                cell = Cell(row,col,val,pattern_id)
+                self._cell[row][col] = cell
+                pattern.add_cell(cell)
+        
     def to_json(self, path : str) : 
-        pass
+        grid_dict : dict = {}
+        
+        for pattern_id,pattern in self._patterns.items():
+            pattern_key = "motif" + str(pattern_id)
+            triplets = []
+            
+            for cell in pattern.cells:
+                val = cell.get_value() if cell.get_given else 0
+                triplets.append([cell.get_row(), cell.get_column(),val])
+                
+            grid_dict[pattern_key] = triplets
+            
+        JSONLoader.save_json(path, grid_dict)
         
 
