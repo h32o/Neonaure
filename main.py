@@ -6,21 +6,7 @@ from model import Model
 
 def main():
     app = QApplication(sys.argv)
-    
-    model = Model("grille8.json", "Grille 8")
-    
- 
-    view = MainWindow()
-    
-  
-    controller = Controller(model, view)
-    
-   
-    for (r, c), cell in view.cells.items():
-        cell.textChanged.connect(lambda text, row=r, col=c: 
-                                 controller.update_cell_value(row, col, text))
-
-    view.show()
+    controller = Controller(Model((8,8),"Grille8"), MainWindow())
     sys.exit(app.exec())
 
 if __name__ == "__main__":

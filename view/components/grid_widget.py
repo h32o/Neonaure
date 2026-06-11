@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QWidget, QGridLayout
 from PyQt6.QtCore import Qt, pyqtSignal
-from components.cell_widget import CellWidget
+from .cell_widget import CellWidget
 
 class GridWidget(QWidget):
     signal_cell_changed = pyqtSignal(int, int, str)

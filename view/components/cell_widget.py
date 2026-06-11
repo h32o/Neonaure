@@ -28,19 +28,19 @@ class CellWidget(QLineEdit):
         
     def set_borders(self, top_bold, right_bold, bottom_bold, left_bold):
         if top_bold:
-            self.bold_borders['top'] = "5px solid black"
+            self.bold_borders['top'] = "2px solid black"
         else : 
             self.bold_borders['top'] = "0.5px solid black"
         if right_bold:
-            self.bold_borders['right'] = "5px solid black"  
+            self.bold_borders['right'] = "2px solid black"  
         else :
             self.bold_borders['right'] = "0.5px solid black"
         if bottom_bold:
-            self.bold_borders['bottom'] = "5px solid black"
+            self.bold_borders['bottom'] = "2px solid black"
         else :
             self.bold_borders['bottom'] = "0.5px solid black"
         if left_bold:
-            self.bold_borders['left'] = "5px solid black"
+            self.bold_borders['left'] = "2px solid black"
         else :
             self.bold_borders['left'] = "0.5px solid black"
         self._apply_cell_style()
