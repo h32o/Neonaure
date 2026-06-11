@@ -60,4 +60,4 @@ class Cell():
         self._given = boolean
 
     def __str__(self) -> str:
-        return f"{self.get_row()},{self.get_column()},{self.get_given()},{self.get_motif_id()},{self.get_value()}"
+        return f"{self.get_row()},{self.get_column()},{self.get_given()},{self.get_pattern_id()},{self.get_value()}"
