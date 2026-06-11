@@ -2,7 +2,7 @@ import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QMessageBox, QLabel, QPushButton, QHBoxLayout
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import QAction, QKeySequence
-from components.grid_widget import GridWidget
+from .components.grid_widget import GridWidget
 
 class MainWindow(QMainWindow):
     signal_load_grid = pyqtSignal()
@@ -10,6 +10,7 @@ class MainWindow(QMainWindow):
     signal_reset_grid = pyqtSignal()
     signal_solve_grid = pyqtSignal()
     signal_undo = pyqtSignal()
+    signal_cell_changed = pyqtSignal(int, int, str)
 
     def __init__(self):
         super().__init__()
@@ -26,6 +27,7 @@ class MainWindow(QMainWindow):
         self.timer.timeout.connect(self.update_timer_display)
         
         self.grid_widget = GridWidget()
+        self.grid_widget.signal_cell_changed.connect(self.signal_cell_changed)
         self.main_layout.addWidget(self.grid_widget)
         self.grid_widget.create_grid()
         
@@ -135,6 +137,15 @@ class MainWindow(QMainWindow):
         else:
             self.timer_label.hide()       
             self.timer.stop()
+    
+    def update_cell(self, row, col, value):
+        self.grid_widget.cells[(row, col)].setText(str(value))
+    
+    def update_cell_error(self, row, col, is_error):
+        self.grid_widget.change_color_cell_error(row, col, is_error)
+
+    def set_cell_readonly(self, row, col, value):
+        self.grid_widget.cells[(row, col)].set_value(value)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
