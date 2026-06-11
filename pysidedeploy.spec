@@ -1,7 +1,7 @@
 [app]
 
 # title of your application
-title = "Neonaure"
+title = Neonaure
 
 # project root directory. default = The parent directory of input_file
 source_dir = .
@@ -41,7 +41,7 @@ qml_files =
 excluded_qml_plugins = 
 
 # qt modules used. comma separated
-modules = Core,Widgets,Gui
+modules = Widgets,Core,Gui
 
 # qt plugins used by the application. only relevant for desktop deployment
 # for qt plugins used in android application see [android][plugins]
