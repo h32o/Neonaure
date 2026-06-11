@@ -1,4 +1,4 @@
-from Grid import Grid
+from .Grid import Grid
 
 class Solveur():
     def __init__(self, grid : Grid):
