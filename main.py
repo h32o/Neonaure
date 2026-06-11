@@ -14,11 +14,6 @@ def main():
     
   
     controller = Controller(model, view)
-    
-   
-    for (r, c), cell in view.cells.items():
-        cell.textChanged.connect(lambda text, row=r, col=c: 
-                                 controller.update_cell_value(row, col, text))
 
     view.show()
     sys.exit(app.exec())

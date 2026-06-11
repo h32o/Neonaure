@@ -4,7 +4,7 @@ import logging
 from typing import Union, Dict
 
 # Subject to change
-DEFAULT_DIR : str = os.path.join("..","..","..","examples")  #! Example folder
+DEFAULT_DIR : str = os.path.join("examples")  #! Example folder
 
 class JSONLoader:
     
@@ -32,7 +32,6 @@ class JSONLoader:
         """
 
         resolved_file_path = JSONLoader._resolve_path(file_path)
-
         try: 
             with open(resolved_file_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
@@ -42,7 +41,7 @@ class JSONLoader:
             return None
 
     @staticmethod
-    def save_json() -> bool:
+    def save_json(file_path: str, data) -> bool:
         """
         Well, it saves a JSON file into a specified path
 

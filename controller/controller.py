@@ -1,54 +1,128 @@
-import logging 
+import logging, random
+from tools.json_handler import JSONLoader
+from PyQt6.QtWidgets import QFileDialog
+from model.Grid import Grid
+from model.solveur import Solver
 
 class Controller:
     def __init__(self, model, view):
-        self.model = model
-        self.view = view
+        self._model = model
+        self._view = view
+        
+        self._historic = []
 
         #! Temporary (View need to implement another function)
-        self.view.signal_reset_grid.connect(self.handle_reset)
-        self.view.signal_undo.connect(self.handle_undo)
-        self.view.signal_save_grid.connect(self.handle_save)
-        self.view.signal_load_grid.connect(self.handle_load)
-        self.view.signal_solve_grid.connect(self.handle_solve)
+        self._view.signal_reset_grid.connect(self.handle_reset)
+        self._view.signal_undo.connect(self.handle_undo)
+        self._view.signal_save_grid.connect(self.handle_save)
+        self._view.signal_load_grid.connect(self.handle_load)
+        self._view.signal_solve_grid.connect(self.handle_solve)
+        self._view.signal_cell_changed.connect(self.update_cell_value)
+        self._view.signal_background_change.connect(self.on_change_background)
+
+        self._view.show()
+        self._load_game()
 
     def handle_reset(self):
-        self.model.reset()
+        self._model.reset_user_values()
         self.refresh_view()
 
     def handle_undo(self):
-        if self.model.undo():
+        if len(self._historic) != 0:
+            self._model.restore_state(self._historic.pop())
             self.refresh_view()
 
-    def handle_save(self):
+    def handle_save(self,path):
         try:
-            self.model.save_to_file("savegame.json")
+            self._model.to_json(path)
         except Exception as e:
             logging.error(e)
 
-    def handle_load(self):
-        try:
-            self.model.load_from_file("savegame.json")
-            self.refresh_view()
+    def handle_load(self,path):
+        try : 
+            self._model.from_json(path)
+            self._historic.clear()
+            self._view.rebuild_grid(self._model._row, self._model._column)
+            self._init_view_from_model()
+            
         except Exception as e:
             logging.error(e)
 
     def handle_solve(self):
-        pass
+        self._historic.append(self._model.get_state())
+        solver = Solver(self._model)
+        solver.solve()
+        self._init_view_from_model()
+        
+    def update_cell_value(self, row, col, text):
+        self._historic.append(self._model.get_state())
+        value = int(text) if text else 0
+        self._model.set_value((row, col), value)
+        
+        self._check_cell_error(row, col)
 
-    def update_cell_value(self, row, col, value):
-        success = self.model.update_cell(row, col, value)
-        if success:
-            is_valid, error = self.model.check_rules(row, col)
-            if not is_valid:
-                self.view.change_color_cell_error(row, col, True)
-            else:
-                self.view.change_color_cell_error(row, col, False)
-            self.refresh_view()
+        for neighbor in self._model.get_neighbors(row, col):
+            nr, nc = neighbor.get_row(), neighbor.get_column()
+            neighbor_ok = self._model.check_neighbor_constraint(nr, nc)
+            pattern_id = self._model.get_cell((nr, nc)).get_pattern_id()
+            pattern_ok = self._model.check_pattern_constraint(pattern_id)
+            self._view.update_cell_error(nr, nc, not neighbor_ok or not pattern_ok)
 
+        pattern_id = self._model.get_cell((row, col)).get_pattern_id()
+        pattern = self._model.get_pattern(pattern_id)
+        for cell in pattern.get_cells():
+            self._check_cell_error(cell.get_row(), cell.get_column())
+
+        if self._model.is_solved():
+            self._view.show_victory()
+
+    def _check_cell_error(self, row, col):
+        neighbor_ok = self._model.check_neighbor_constraint(row, col)
+
+        cell = self._model.get_cell((row, col))
+        cell_val = cell.get_value()
+        pattern_ok = True
+        if cell_val != 0:
+            pattern = self._model.get_pattern(cell.get_pattern_id())
+            count = sum(1 for c in pattern.get_cells() if c.get_value() == cell_val)
+            if count > 1:
+                pattern_ok = False
+
+        is_error = not neighbor_ok or not pattern_ok
+        self._view.update_cell_error(row, col, is_error)
+        
     def refresh_view(self):
-        for r in range(8):
-            for c in range(8):
-                val = self.model.grid[r][c]
-                cell = self.view.cells[(r, c)]
-                cell.setText(val)
+        for r in range(self._model._row):
+            for c in range(self._model._column):
+                val = self._model.get_cell((r, c)).get_value()
+                self._view.update_cell(r, c, val)
+
+
+    def _init_view_from_model(self):
+        for r in range(self._model._row):
+            for c in range(self._model._column):
+                cell = self._model.get_cell((r, c))
+                val = cell.get_value()
+
+                if cell.get_given():
+                    # Show value and lock cell
+                    self._view.set_cell_readonly(r, c, val)
+                elif val != 0:
+                    # Show user-filled value
+                    self._view.update_cell(r, c, val)
+                # borders
+                borders = self._model.get_pattern_border(r, c)
+                self._view.grid_widget.set_cell_borders(
+                    r, c, 
+                    borders["top"], borders["right"], 
+                    borders["bottom"], borders["left"]
+                )
+    def on_change_background(self,path : str):
+        self._view.set_background(path)
+        
+    def _load_game(self) : 
+        self._model.from_json("examples/grille2.json")
+        self._init_view_from_model()
+
+
+

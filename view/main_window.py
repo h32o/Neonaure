@@ -1,39 +1,48 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QGridLayout, QLineEdit, QMessageBox, QLabel, QPushButton, QHBoxLayout
-from PyQt6.QtCore import Qt, QRegularExpression, QTimer, pyqtSignal
-from PyQt6.QtGui import QAction, QRegularExpressionValidator 
+import os 
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QMessageBox, QLabel, QPushButton, QHBoxLayout,QFileDialog,QGraphicsScene, QGraphicsPixmapItem, QGraphicsBlurEffect
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal
+from PyQt6.QtGui import QAction, QKeySequence,QPixmap,QPainter
+from .components.grid_widget import GridWidget
 
 class MainWindow(QMainWindow):
-    signal_load_grid = pyqtSignal()
-    signal_save_grid = pyqtSignal()
+    signal_load_grid = pyqtSignal(str)
+    signal_save_grid = pyqtSignal(str)
     signal_reset_grid = pyqtSignal()
     signal_solve_grid = pyqtSignal()
     signal_undo = pyqtSignal()
+    signal_cell_changed = pyqtSignal(int, int, str)
+    signal_background_change = pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
-        
+    
         self.setWindowTitle("Néonaure")
-        self.setMinimumSize(600, 600) 
-        widget_central = QWidget()
+        self.setMinimumSize(600, 600)
+        
+        self.bg_label = QLabel()
+        self.bg_label.setScaledContents(True)
+        self.setCentralWidget(self.bg_label)
+        self.main_layout = QVBoxLayout(self.bg_label)
+         
+        """widget_central = QWidget()
         self.setCentralWidget(widget_central)
-        self.main_layout = QVBoxLayout(widget_central)
+        self.main_layout = QVBoxLayout(widget_central)"""
         self.init_menu()
 
         self.time_counter = 0
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_timer_display)
         
-        self.grid_layout = QGridLayout()
-        self.grid_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.grid_layout.setSpacing(0)
-        self.grid_layout.setContentsMargins(0, 0, 0, 0)
-        
-        self.main_layout.addLayout(self.grid_layout)
+        self.grid_widget = GridWidget()
+        self.grid_widget.signal_cell_changed.connect(self.signal_cell_changed)
+        self.main_layout.addWidget(self.grid_widget)
+        self.grid_widget.create_grid(8,8)
         
         self.bottom_layout = QHBoxLayout()
         
         self.undo_button = QPushButton("↶")
+        self.undo_button.setShortcut(QKeySequence("Ctrl+Z"))
         self.undo_button.setFixedSize(50, 50)
         self.undo_button.setStyleSheet("""
                 background-color: grey; 
@@ -56,9 +65,6 @@ class MainWindow(QMainWindow):
         self.bottom_layout.addWidget(self.solve_button)
         
         self.main_layout.addLayout(self.bottom_layout)
-        
-        self.cells = {}   
-        self.create_grid()
     
     def init_menu(self):
         menu_bar = self.menuBar() 
@@ -77,8 +83,13 @@ class MainWindow(QMainWindow):
         
         self._create_action(settings_menu, "&Game Rules", "Ctrl+H", self.show_rules)
 
+        Theme_menu = menu_bar.addMenu("&Theme")
+        
+        self._create_action(Theme_menu, "&Change background-image", "Ctrl+B", self.change_background)
+        
+        
         self.timer_label = QLabel("0s  ", self) 
-        self.timer_label.setStyleSheet("font-size: 13px; font-weight: bold; color: #ffffff;")
+        self.timer_label.setStyleSheet("font-size: 13px; font-weight: bold; color: #ffffff; margin-right: 70px;")
         self.timer_label.hide()  
         
         menu_bar.setCornerWidget(self.timer_label, Qt.Corner.TopRightCorner)
@@ -90,41 +101,15 @@ class MainWindow(QMainWindow):
         menu.addAction(action)
         return action 
 
-    def create_grid(self):
-        regex = QRegularExpression("^[1-5]$")
-        validator = QRegularExpressionValidator(regex, self)
-        
-        for line in range(8):
-            for column in range(8):
-                cell = QLineEdit()
-                cell.setValidator(validator)
-                cell.setMaxLength(1)
-                cell.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                cell.setFixedSize(50, 50)   
-                cell.setStyleSheet("""
-                    background-color: white;
-                    border: 0.5px solid black;
-                    color: black;
-                    font-weight : bold;                  
-                """)
-                cell.row = line
-                cell.column = column
-                cell.textChanged.connect(self.on_cell_changed)
-                self.grid_layout.addWidget(cell, line, column)
-                self.cells[(line, column)] = cell
-
-    def on_cell_changed(self, text):
-        pass
-
     def show_rules(self):
         rules_box = QMessageBox(self)
-        rules_box.setWindowTitle("Règles du Néonaure")   
+        rules_box.setWindowTitle("Rules of the Néonaure")   
         rules_box.setText(
-            "Bienvenue dans le Néonaure !\n"
-            "Voici les règles pour résoudre la grille :\n\n"
-            "• un chiffre par case\n"
-            "• un chiffre doit être entouré de chiffres différents (y compris en diagonale)\n"
-            "• un motif de N cases (repéré en traits gras) doit comporter tous les chiffres de 1 à N\n"
+            "Welcome to the Néonaure!\n"
+            "Here are the rules for solving the grid:\n\n"
+            "• one number per cell\n"
+            "• a number must be surrounded by different numbers (including diagonally)\n"
+            "• a pattern of N cells (marked with bold lines) must contain all numbers from 1 to N\n"
         )
         rules_box.exec()
     
@@ -143,13 +128,28 @@ class MainWindow(QMainWindow):
         self.signal_reset_grid.emit()
     
     def load_grid(self):
+        path, _ = QFileDialog.getOpenFileName(self, "Choose grid", "", "")
+        if path:
+            self.signal_load_grid.emit(path)
         print("Request to load a grid (Crtl+L).")
-        self.signal_load_grid.emit()
+        
 
     def save_grid(self):
+        path, _ = QFileDialog.getSaveFileName(self, "Choose image", "", ".json")
+        if path:
+            self.signal_save_grid.emit(path)
         print("Request to save the grid (Ctrl+S).")
-        self.signal_save_grid.emit()
-
+        
+    def clear_grid(self):
+        for cell in self.grid_widget.cells.values():
+            self.grid_widget.grid_layout.removeWidget(cell)
+            cell.deleteLater()
+        self.grid_widget.cells.clear()
+    
+    def rebuild_grid(self, rows, cols):
+        self.clear_grid()
+        self.grid_widget.create_grid(rows, cols)
+        
     def solve_grid(self):
         print("Request to solve the grid.")
         self.signal_solve_grid.emit()
@@ -164,28 +164,51 @@ class MainWindow(QMainWindow):
             self.timer.start(1000)        
         else:
             self.timer_label.hide()       
-            self.timer.stop()         
-
-    def set_index_cell(self, line, column, value):
-        cell = self.cells[(line, column)]
-        cell.setText(str(value))
-        cell.setReadOnly(True)
-        cell.setStyleSheet("""
-        background-color: #E0E0E0;
-        border: 0.5px solid black;
-        color: #333333;
-        font-weight: bold;
-         """)    
+            self.timer.stop()
     
-    def change_color_cell_error(self, line, column, is_error):
-        cell = self.cells[(line, column)]
-        if cell.isReadOnly():
-            return 
-        if is_error:
-            cell.setStyleSheet("background-color: #FFCCCC;")
+    def update_cell(self, row, col, value):
+        cell = self.grid_widget.cells[(row, col)]
+        cell.blockSignals(True)
+        if value == 0:
+            cell.setText("")
         else:
-            cell.setStyleSheet("background-color: white;")
+            cell.setText(str(value))
+        cell.blockSignals(False)
+    
+    def update_cell_error(self, row, col, is_error):
+        self.grid_widget.change_color_cell_error(row, col, is_error)
 
+    def set_cell_readonly(self, row, col, value):
+        cell = self.grid_widget.cells[(row, col)]
+        cell.blockSignals(True)
+        cell.set_value(value)
+        cell.setReadOnly(True)
+        cell.blockSignals(False)
+    
+    def change_background(self):
+        path, _ = QFileDialog.getOpenFileName(self, "Choose image", "", "Images (*.png *.jpg *.jpeg *.bmp *.webp)")
+        if path:
+            self.signal_background_change.emit(path)
+        print("Request to change background-image")
+
+    def set_background(self, path):
+        if os.path.exists(path):
+            pixmap = QPixmap(path)
+            if not pixmap.isNull():
+                small = pixmap.scaled(
+                pixmap.width() // 40,
+                pixmap.height() // 40,
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation
+                )
+                blurred = small.scaled(
+                    pixmap.width(),
+                    pixmap.height(),
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation
+                )
+                self.bg_label.setPixmap(blurred)
+                
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()

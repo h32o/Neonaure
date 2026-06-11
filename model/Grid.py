@@ -1,6 +1,6 @@
 from model.Cell import Cell
 from model.Pattern import Pattern
-from ..tools.json_handler import JSONLoader
+from tools.json_handler import JSONLoader
 import json
 
 class Grid:
@@ -32,8 +32,10 @@ class Grid:
     
     def get_neighbors(self,row : int,col : int) -> list[Cell]:
         Cell_list : list[Cell] = []
-        for x in range(row - 1,row + 2):
-            for y in range(col - 1,col + 2):
+        for x in range(row - 1, row + 2):
+            for y in range(col - 1, col + 2):
+                if x == row and y == col:
+                    continue                          # skip cell itself; bug fix
                 if x >= 0 and x < self._row:
                     if y >= 0 and y < self._column:
                         if x != row or y != col:
@@ -120,11 +122,9 @@ class Grid:
         return pattern_border
     
     def from_json(self, path : str) -> None: 
-        """grid_dict : dict = JSONLoader.load_json(path)"""
-        
         with open(path, "r", encoding="utf-8") as f:
-            grid_dict = json.load(f)
-        
+            grid_dict : dict = json.load(f)
+
         max_row : int = 0
         max_col : int = 0
         for triplets in grid_dict.values():
@@ -145,7 +145,9 @@ class Grid:
             
             for triplet in triplets:
                 row, col, val = triplet[0], triplet[1], triplet[2]
-                cell = Cell(row,col,val,pattern_id)
+                given = triplet[3] if len(triplet) > 3 else (1 if val != 0 else 0)
+                cell = Cell(row, col, val, pattern_id)
+                cell.set_given(bool(given))
                 self._cell[row][col] = cell
                 pattern.add_cell(cell)
         
@@ -157,12 +159,12 @@ class Grid:
             triplets = []
             
             for cell in pattern.cells:
-                val = cell.get_value() if cell.get_given() else 0
-                triplets.append([cell.get_row(), cell.get_column(),val])
+                val = cell.get_value()
+                given = 1 if cell.get_given() else 0
+                triplets.append([cell.get_row(), cell.get_column(), val, given])
                 
             grid_dict[pattern_key] = triplets
             
-        """JSONLoader.save_json(path, grid_dict)"""
         with open(path, "w", encoding="utf-8") as f:
             json.dump(grid_dict, f, ensure_ascii=False, indent=2)
         
