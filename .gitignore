@@ -11,3 +11,6 @@ tempCodeRunnerFile.py
 
 whl
 .whl
+
+*.log
+deployment
