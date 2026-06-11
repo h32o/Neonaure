@@ -1,7 +1,8 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QMessageBox, QLabel, QPushButton, QHBoxLayout
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal
-from PyQt6.QtGui import QAction, QKeySequence
+from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QMessageBox, QLabel, QPushButton, QHBoxLayout
+from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import Signal as pyqtSignal
+from PySide6.QtGui import QAction, QKeySequence
 from .components.grid_widget import GridWidget
 
 class MainWindow(QMainWindow):
