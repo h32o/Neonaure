@@ -9,6 +9,29 @@ from PyQt6.QtGui import QAction, QKeySequence
 from .components.grid_widget import GridWidget
 from view.settings_window import SettingsWindow
 
+class BackgroundWidget(QWidget):
+    """Widget qui dessine une image floue en fond derrière ses enfants."""
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._bg_pixmap = None
+
+    def set_bg_pixmap(self, pixmap):
+        self._bg_pixmap = pixmap
+        self.update()
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        if self._bg_pixmap and not self._bg_pixmap.isNull():
+            painter = QPainter(self)
+            painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+            scaled = self._bg_pixmap.scaled(
+                self.width(), self.height(),
+                Qt.AspectRatioMode.KeepAspectRatioByExpanding,
+                Qt.TransformationMode.SmoothTransformation
+            )
+            x = (self.width() - scaled.width()) // 2
+            y = (self.height() - scaled.height()) // 2
+            painter.drawPixmap(x, y, scaled)
 class MainWindow(QMainWindow):
     signal_load_grid = pyqtSignal(str)
     signal_save_grid = pyqtSignal(str)
@@ -28,33 +51,32 @@ class MainWindow(QMainWindow):
             self.setStyleSheet("""
                 QWidget {
                     background-color: #12121A;
+                BackgroundWidget {
+                    background-color: transparent;
+                }
                 }
             """)
-            self.bg_label = QLabel()
-            self.bg_label.setScaledContents(True)
-            self.setCentralWidget(self.bg_label)
-            main_vertical_layout = QVBoxLayout(self.bg_label)
+            
+            
+            central = BackgroundWidget()
+            self.setCentralWidget(central)
+            main_vertical_layout = QVBoxLayout(central)
             main_vertical_layout.setContentsMargins(10, 10, 10, 10)
             main_vertical_layout.setSpacing(0)
-            
-            """widget_central = QWidget()
-            self.setCentralWidget(widget_central)
-            self.main_layout = QVBoxLayout(widget_central)"""
-            """self.init_menu()"""
             
             
             # ── Top bar ──
             self.top_layout = QHBoxLayout()
             
             self.settings_button = QPushButton("☰")
-            self.settings_button.setFixedSize(40, 40)
+            self.settings_button.setFixedSize(80,80)
             self.settings_button.setStyleSheet("""
             QPushButton {
                 background-color: #2A2A35; 
                 color: #E0E0FF; 
                 border-radius: 5px; 
                 border: 1px solid #383A59;
-                font-size: 25px;
+                font-size: 50px;
             }
             QPushButton:hover {
                 background-color: #383A59;
@@ -66,7 +88,7 @@ class MainWindow(QMainWindow):
             main_vertical_layout.addLayout(self.top_layout, 0)
             
             # ── Middle: settings + game ──
-            self.root_layout = QHBoxLayout(self.bg_label)
+            self.root_layout = QHBoxLayout()
             self.root_layout.setContentsMargins(0, 10, 0, 0)
             self.root_layout.setSpacing(0) 
             main_vertical_layout.addLayout(self.root_layout, 1)
@@ -89,15 +111,13 @@ class MainWindow(QMainWindow):
 
             self.root_layout.addWidget(self.game_widget, 1)
 
-            # Label de fond UNIQUEMENT derrière la grille
-            self.grid_bg_label = QLabel(self.game_widget)
-            self.grid_bg_label.setScaledContents(True)
-            self.grid_bg_label.setGeometry(0, 0, 1, 1)  # sera repositionné par resizeEvent
-
             self.grid_widget = GridWidget()
+            self.grid_widget.setStyleSheet("background-color: transparent;")
             self.grid_widget.signal_cell_changed.connect(self.signal_cell_changed)
             self.game_layout.addWidget(self.grid_widget, 1)
             self.grid_widget.create_grid()
+
+
             
             self.timer_label = QLabel("") 
             self.timer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -114,14 +134,14 @@ class MainWindow(QMainWindow):
             
             self.undo_button = QPushButton("↶")
             self.undo_button.setShortcut("Ctrl+Z")
-            self.undo_button.setFixedSize(50, 50)
+            self.undo_button.setFixedSize(80,80)
             self.undo_button.setStyleSheet("""
             QPushButton {
                 background-color: #2A2A35; 
                 color: #E0E0FF; 
                 border-radius: 10px; 
                 border: 1px solid #383A59;
-                font-size: 25px;
+                font-size: 50px;
                 margin-left: 10px;
             }
             QPushButton:hover {
@@ -133,7 +153,7 @@ class MainWindow(QMainWindow):
 
             self.hint_button = QPushButton("💡")
             self.hint_button.setShortcut(QKeySequence("Ctrl+H"))
-            self.hint_button.setFixedSize(50, 50)
+            self.hint_button.setFixedSize(80,80)
             self.hint_button.setStyleSheet("""
                     background-color: gold; 
                     color: white; 
@@ -149,14 +169,14 @@ class MainWindow(QMainWindow):
             self.bottom_layout.addStretch()
 
             self.solve_button = QPushButton("✓")
-            self.solve_button.setFixedSize(50, 50)
+            self.solve_button.setFixedSize(80,80)
             self.solve_button.setStyleSheet("""
             QPushButton {
                 background-color: #9D4EDD; 
                 color: #E0E0FF; 
                 border-radius: 10px; 
                 border: none;
-                font-size: 25px;
+                font-size: 50px;
             }
             QPushButton:hover {
                 background-color: #B57EDC;
@@ -363,14 +383,7 @@ class MainWindow(QMainWindow):
                     Qt.AspectRatioMode.KeepAspectRatio,
                     Qt.TransformationMode.SmoothTransformation
                 )
-                self.grid_bg_label.setPixmap(blurred)
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        if hasattr(self, 'grid_widget'):
-            geo = self.grid_widget.geometry()
-            # Convertir en coordonnées de game_widget
-            pos = self.grid_widget.mapTo(self.game_widget, geo.topLeft())
-            self.grid_bg_label.setGeometry(pos.x(), pos.y(), geo.width(), geo.height())
+                self.centralWidget().set_bg_pixmap(blurred)
                
                 
 if __name__ == "__main__":
