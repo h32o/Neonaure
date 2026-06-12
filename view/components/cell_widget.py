@@ -12,7 +12,6 @@ class CellWidget(QLineEdit):
         self.setValidator(validator)
         self.setMaxLength(1)
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.setFixedSize(50, 50) 
 
         self.setStyleSheet("""
             background-color: white;
@@ -26,14 +25,14 @@ class CellWidget(QLineEdit):
         self.is_error = False
         
     
-        self.bold_borders = {'top': "0.5px solid lightgray",
+        self.bold_borders = {'top': "0s.5px solid lightgray",
                              'right': "0.5px solid lightgray", 
                              'bottom': "0.5px solid lightgray", 
                              'left': "0.5px solid lightgray"} 
         
     def set_borders(self, top_bold, right_bold, bottom_bold, left_bold):
         BOLD_BORDER = "1.5px solid black"
-        NORMAL_BORDER = "0.5px solid #C8C0C0"
+        NORMAL_BORDER = "0.5px solid #474747"
 
         if top_bold:
             self.bold_borders['top'] = BOLD_BORDER
@@ -42,7 +41,7 @@ class CellWidget(QLineEdit):
         
         if right_bold:
             self.bold_borders['right'] = BOLD_BORDER 
-        else :
+        else:
             self.bold_borders['right'] = NORMAL_BORDER
             
         if bottom_bold:
@@ -60,7 +59,7 @@ class CellWidget(QLineEdit):
 
     def _apply_cell_style(self):
         if self.isReadOnly():
-            background_color = "#B6B6B6"
+            background_color = "#ADADAD"
         elif self.is_error:
             background_color = "#FFCCCC" 
         else:
