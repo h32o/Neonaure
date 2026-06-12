@@ -19,6 +19,7 @@ class Controller:
         self._view.signal_solve_grid.connect(self.handle_solve)
         self._view.signal_cell_changed.connect(self.update_cell_value)
         self._view.signal_background_change.connect(self.on_change_background)
+        self._view.signal_hint.connect(self.give_hint)
 
         self._view.show()
         self._load_game()
@@ -54,6 +55,42 @@ class Controller:
         solver.solve()
         self._init_view_from_model()
         
+    def give_hint(self) -> bool:
+        self._historic.append(self._model.get_state())
+        
+        solver = Solver(self._model)
+        solver.solve()
+        
+        state = self._model.get_state()
+        hint_cells = []
+        ancient_state = self._historic.pop()
+        for (r, c), (val, given, pid) in state.items():
+            if not given and val != 0 and ancient_state[(r,c)][0] == 0:
+                hint_cells.append((r, c, val))
+        
+        self._model.restore_state(ancient_state)
+        
+        if hint_cells:
+            r, c, val = random.choice(hint_cells)
+            print(f"Hint: ({r},{c}) = {val}")
+            self._historic.append(self._model.get_state())
+            self._model.set_value((r, c), val)
+            self._view.update_cell(r, c, val)
+            self._check_cell_error(r, c)
+            for neighbor in self._model.get_neighbors(r, c):
+                self._check_cell_error(neighbor.get_row(), neighbor.get_column())
+            pattern_id = self._model.get_cell((r, c)).get_pattern_id()
+            pattern = self._model.get_pattern(pattern_id)
+            for cell in pattern.get_cells():
+                self._check_cell_error(cell.get_row(), cell.get_column())
+            
+            self._view.start_hint_cooldown(60)
+            
+            if self._model.is_solved():
+                self._view.show_victory()
+            return True
+        return False
+               
     def update_cell_value(self, row, col, text):
         self._historic.append(self._model.get_state())
         value = int(text) if text else 0

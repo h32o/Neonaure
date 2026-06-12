@@ -11,6 +11,7 @@ class MainWindow(QMainWindow):
     signal_reset_grid = pyqtSignal()
     signal_solve_grid = pyqtSignal()
     signal_undo = pyqtSignal()
+    signal_hint = pyqtSignal()
     signal_cell_changed = pyqtSignal(int, int, str)
     signal_background_change = pyqtSignal(str)
 
@@ -51,6 +52,21 @@ class MainWindow(QMainWindow):
                 """)
         self.undo_button.clicked.connect(self.undo)
         self.bottom_layout.addWidget(self.undo_button)
+        
+        self.hint_button = QPushButton("💡")
+        self.hint_button.setShortcut(QKeySequence("Ctrl+H"))
+        self.hint_button.setFixedSize(50, 50)
+        self.hint_button.setStyleSheet("""
+                background-color: gold; 
+                color: white; 
+                border-radius: 10px; 
+                """)
+        self.hint_button.clicked.connect(self.give_hint)
+        self.bottom_layout.addWidget(self.hint_button)
+        
+        self.hint_cooldown = 0
+        self.hint_timer = QTimer(self)
+        self.hint_timer.timeout.connect(self.update_hint_cooldown)
 
         self.bottom_layout.addStretch()
 
@@ -81,7 +97,7 @@ class MainWindow(QMainWindow):
         self.show_timer_action.triggered.connect(self.toggle_timer)
         settings_menu.addAction(self.show_timer_action)
         
-        self._create_action(settings_menu, "&Game Rules", "Ctrl+H", self.show_rules)
+        self._create_action(settings_menu, "&Game Rules", "Ctrl+G", self.show_rules)
 
         Theme_menu = menu_bar.addMenu("&Theme")
         
@@ -122,7 +138,33 @@ class MainWindow(QMainWindow):
     def update_timer_display(self):
         self.time_counter += 1
         self.timer_label.setText(f"{self.time_counter}s")
-
+    
+    def start_hint_cooldown(self,seconds = 1000):
+        self.hint_cooldown = seconds
+        self.hint_button.setEnabled(False)
+        self.hint_button.setText(str(seconds))
+        self.hint_button.setStyleSheet("""
+                               background-color:grey ;
+                               color:white;
+                               border-radius: 10px;
+                                      
+                                       """)
+        self.hint_timer.start(1000)
+    
+    def update_hint_cooldown(self):
+        self.hint_cooldown -= 1
+        if self.hint_cooldown <= 0:
+            self.hint_timer.stop()
+            self.hint_button.setEnabled(True)
+            self.hint_button.setText('💡')
+            self.hint_button.setStyleSheet("""
+                background-color: gold; 
+                color: white; 
+                border-radius: 10px; 
+                """)
+        else :
+            self.hint_button.setText(str(self.hint_cooldown))
+    
     def reset_grid(self):
         print("Request to reset the grid.")
         self.signal_reset_grid.emit()
@@ -158,6 +200,10 @@ class MainWindow(QMainWindow):
         print("Request to undo.")
         self.signal_undo.emit()
 
+    def give_hint(self):
+        print("Request to give an hint")
+        self.signal_hint.emit()
+        
     def toggle_timer(self):
         if self.show_timer_action.isChecked():
             self.timer_label.show()       

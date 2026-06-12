@@ -24,6 +24,9 @@ class Grid:
     def get_cell(self,coord : tuple) -> Cell:
         return self._cell[coord[0]][coord[1]]
     
+    def get_cells(self) -> list[list[Cell]]:
+        return self._cell
+    
     def get_pattern_dict(self) -> dict:
         return self._patterns
     
