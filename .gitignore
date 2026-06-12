@@ -5,5 +5,15 @@ __pycache__/
 tempCodeRunnerFile.py
 
 .env
+.venv
 
 .pyc
+
+whl
+.whl
+
+.buildozer
+
+*.log
+
+deployment
