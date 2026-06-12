@@ -4,7 +4,8 @@ import logging
 from typing import Union, Dict
 
 # Subject to change
-DEFAULT_DIR : str = os.path.join("examples")  #! Example folder
+_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) #? Android fix by default android put the root path in data/user/0/org.neonaure.neonaure/files/app
+DEFAULT_DIR = os.path.join(_PROJECT_ROOT, "examples")  #! Example folder
 
 class JSONLoader:
     
@@ -20,8 +21,8 @@ class JSONLoader:
         
         #? os.sep ? See : https://docs.python.org/3/library/os.html#os.sep ('/' or '\\')
         if os.sep in input_path or '/' in input_path:
-            return os.path.join(os.getcwd(), input_path) #? os.getcwd() Return a string representing the current working directory.
-
+            # return os.path.join(os.getcwd(), input_path) #? os.getcwd() Return a string representing the current working directory.
+            return os.path.join(_PROJECT_ROOT, input_path)
         else : 
             return os.path.join(DEFAULT_DIR, input_path)
     

@@ -22,7 +22,7 @@ project_dir = .
 [python]
 
 # python path
-python_path = /mnt/c/Users/H/Documents/SAE IHM/Neonaure/.venv/bin/python3.11
+python_path = /mnt/c/Users/H/Documents/Neonaure/.venv/bin/python3.11
 
 # python packages to install
 packages = Nuitka==4.0
@@ -50,10 +50,10 @@ plugins =
 [android]
 
 # path to pyside wheel
-wheel_pyside = /mnt/c/Users/H/Documents/SAE IHM/Neonaure/whl/pyside6-6.11.1-6.11.1-cp311-cp311-android_aarch64.whl
+wheel_pyside = /home/h/Neonaure/whl/pyside6-6.11.1-6.11.1-cp311-cp311-android_aarch64.whl
 
 # path to shiboken wheel
-wheel_shiboken = /mnt/c/Users/H/Documents/SAE IHM/Neonaure/whl/shiboken6-6.11.1-6.11.1-cp311-cp311-android_aarch64.whl
+wheel_shiboken = /home/h/Neonaure/whl/shiboken6-6.11.1-6.11.1-cp311-cp311-android_aarch64.whl
 
 # plugins to be copied to libs folder of the packaged application. comma separated
 plugins = platforms_qtforandroid
@@ -79,10 +79,10 @@ extra_args = --quiet --noinclude-qt-translations
 mode = debug
 
 # path to pyside6 and shiboken6 recipe dir
-recipe_dir = /mnt/c/Users/H/Documents/SAE IHM/Neonaure/deployment/recipes
+recipe_dir = /home/h/Neonaure/deployment/recipes
 
 # path to extra qt android .jar files to be loaded by the application
-jars_dir = /mnt/c/Users/H/Documents/SAE IHM/Neonaure/deployment/jar/PySide6/jar
+jars_dir = /home/h/Neonaure/deployment/jar/PySide6/jar
 
 # if empty, uses default ndk path downloaded by buildozer
 ndk_path = /home/h/.pyside6_android_deploy/android-sdk/ndk/26.3.11579264
