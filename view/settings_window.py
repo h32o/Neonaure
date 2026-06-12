@@ -7,6 +7,7 @@ class SettingsWindow(QWidget):
     signal_reset = pyqtSignal()
     signal_quit = pyqtSignal()
     signal_toggle_timer = pyqtSignal(bool)
+    signal_pseudo_changed = pyqtSignal(str) 
     
     def __init__(self):
         super().__init__()
@@ -19,6 +20,7 @@ class SettingsWindow(QWidget):
         self.menu_list.addItem("General")
         self.menu_list.addItem("Display")
         self.menu_list.addItem("Rules of the Game")
+        self.menu_list.addItem("Account") 
         
         self.menu_list.setStyleSheet("""
             QListWidget {
@@ -46,8 +48,11 @@ class SettingsWindow(QWidget):
         layout_general = QVBoxLayout(self.page_general)
         
         self.btn_load = QPushButton("Load Grid")
+        self.btn_load.setShortcut("Ctrl+L")
         self.btn_save = QPushButton("Save Grid")
+        self.btn_save.setShortcut("Ctrl+S")
         self.btn_reset = QPushButton("Reset Grid")
+        self.btn_reset.setShortcut("Ctrl+R")
         self.btn_quit = QPushButton("Quit Application")
         
         button_style = """
@@ -74,7 +79,7 @@ class SettingsWindow(QWidget):
         layout_general.addWidget(self.btn_reset)
         layout_general.addWidget(self.btn_quit)
         layout_general.addStretch()
-     
+    
         self.page_display = QWidget()
         layout_display = QVBoxLayout(self.page_display)
         
@@ -86,7 +91,7 @@ class SettingsWindow(QWidget):
         layout_display.addWidget(self.checkbox_timer)
         
         layout_display.addStretch()
-        
+
         self.page_rules = QWidget()
         layout_rules = QVBoxLayout(self.page_rules)
         
@@ -102,10 +107,38 @@ class SettingsWindow(QWidget):
         layout_rules.addWidget(QLabel("Rules of the Game"))
         layout_rules.addWidget(rules_text)
         layout_rules.addStretch()
+
+  
+        self.page_account = QWidget()
+        layout_account = QVBoxLayout(self.page_account)
         
-        self.content.addWidget(self.page_general)
-        self.content.addWidget(self.page_display)
-        self.content.addWidget(self.page_rules)
+        layout_account.addWidget(QLabel("Account Settings"))
+        
+        layout_account.addWidget(QLabel("Pseudonym:"))
+        self.pseudo_input = QLineEdit()
+        self.pseudo_input.setPlaceholderText("Enter your pseudo...")
+        self.pseudo_input.setStyleSheet("""
+            QLineEdit {
+                background-color: #40444b; 
+                color: white; 
+                border: 1px solid #383A59; 
+                border-radius: 5px; 
+                padding: 8px;
+            }
+        """)
+        layout_account.addWidget(self.pseudo_input)
+        
+        self.btn_save_pseudo = QPushButton("Save Pseudonym")
+        self.btn_save_pseudo.setStyleSheet(button_style)
+        self.btn_save_pseudo.clicked.connect(self.save_pseudo)
+        layout_account.addWidget(self.btn_save_pseudo)
+        
+        layout_account.addStretch()
+    
+        self.content.addWidget(self.page_general)   
+        self.content.addWidget(self.page_display)   
+        self.content.addWidget(self.page_rules)    
+        self.content.addWidget(self.page_account)   
         
         self.menu_list.currentRowChanged.connect(self.content.setCurrentIndex)
         
@@ -114,3 +147,8 @@ class SettingsWindow(QWidget):
         self.btn_reset.clicked.connect(self.signal_reset.emit)
         self.btn_quit.clicked.connect(self.signal_quit.emit)
         self.checkbox_timer.toggled.connect(self.signal_toggle_timer.emit)
+
+    def save_pseudo(self):
+        pseudo = self.pseudo_input.text()
+        if pseudo:
+            self.signal_pseudo_changed.emit(pseudo)
