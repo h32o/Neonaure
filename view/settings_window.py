@@ -48,8 +48,11 @@ class SettingsWindow(QWidget):
         layout_general = QVBoxLayout(self.page_general)
         
         self.btn_load = QPushButton("Load Grid")
+        self.btn_load.setShortcut("Ctrl+L")
         self.btn_save = QPushButton("Save Grid")
+        self.btn_save.setShortcut("Ctrl+S")
         self.btn_reset = QPushButton("Reset Grid")
+        self.btn_reset.setShortcut("Ctrl+R")
         self.btn_quit = QPushButton("Quit Application")
         
         button_style = """

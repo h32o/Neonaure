@@ -96,4 +96,3 @@ class CellWidget(QLineEdit):
         self.setReadOnly(False)
         self.is_error = False
         self._apply_cell_style()
-

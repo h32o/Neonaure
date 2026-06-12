@@ -118,13 +118,22 @@ class MainWindow(QMainWindow):
         self.game_layout.addWidget(self.grid_widget, 0)
         self.grid_widget.create_grid()
         
-        self.timer_label = QLabel("") 
+        self.timer_label = QLabel("")
         self.timer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.timer_label.setStyleSheet(
-            "font-size: 36px; font-weight: bold; color: #ffffff; "
-            "letter-spacing: 4px; margin-top: 2px; margin-bottom: 4px;"
-        )
-        self.game_layout.addWidget(self.timer_label, 0)
+        self.timer_label.setStyleSheet("""
+            font-size: 32px;
+            font-weight: bold;
+            color: white;
+            background-color: #1E1E2E;
+            border: 1px solid #383A59;
+            border-radius: 8px;
+            padding: 4px 20px;
+            letter-spacing: 4px;
+            margin-top: 8px;
+            margin-bottom: 4px;
+        """)
+        self.game_layout.addWidget(self.timer_label, 0, Qt.AlignmentFlag.AlignHCenter)
+        self.timer_label.setVisible(False)
 
         self.game_layout.addStretch(1)
 
@@ -150,17 +159,17 @@ class MainWindow(QMainWindow):
         self.bottom_layout.setContentsMargins(5, 5, 5, 5)
         self.bottom_layout.setSpacing(8)
 
-        self.undo_button = QPushButton("↶")
+        self.undo_button = QPushButton("↶  Undo")
         self.undo_button.setShortcut("Ctrl+Z")
-        self.undo_button.setFixedSize(45, 45)
-        self.undo_button.setToolTip("Cancel (Ctrl+Z)")
+        self.undo_button.setFixedSize(110, 40)
+        self.undo_button.setToolTip("Undo (Ctrl+Z)")
         self.undo_button.setStyleSheet(nav_button_style)
         self.undo_button.clicked.connect(self.undo)
         self.bottom_layout.addWidget(self.undo_button)
 
-        self.redo_button = QPushButton("↷")
+        self.redo_button = QPushButton("↷  Redo")
         self.redo_button.setShortcut("Ctrl+Y")
-        self.redo_button.setFixedSize(45, 45)
+        self.redo_button.setFixedSize(110, 40)
         self.redo_button.setToolTip("Redo (Ctrl+Y)")
         self.redo_button.setStyleSheet(nav_button_style)
         self.redo_button.clicked.connect(self.redo)
@@ -168,19 +177,24 @@ class MainWindow(QMainWindow):
 
         self.bottom_layout.addStretch()
 
-        self.solve_button = QPushButton("✓")
-        self.solve_button.setFixedSize(50, 50)
+        self.solve_button = QPushButton("Solve  ✓")
+        self.solve_button.setFixedSize(140, 45)
         self.solve_button.setToolTip("Solve the grid")
         self.solve_button.setStyleSheet("""
         QPushButton {
             background-color: #9D4EDD;
             color: #E0E0FF;
-            border-radius: 10px;
+            border-radius: 8px;
             border: none;
-            font-size: 25px;
+            font-size: 15px;
+            font-weight: bold;
+            letter-spacing: 1px;
         }
         QPushButton:hover {
             background-color: #B57EDC;
+        }
+        QPushButton:pressed {
+            background-color: #7B2FBE;
         }
         """)
         self.solve_button.clicked.connect(self.solve_grid)
@@ -214,6 +228,7 @@ class MainWindow(QMainWindow):
 
     def toggle_timer(self, is_checked):
         self.timer_enabled = is_checked
+        self.timer_label.setVisible(is_checked)
         if is_checked:
             minutes = self.time_counter // 60
             seconds = self.time_counter % 60
