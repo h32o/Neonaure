@@ -1,5 +1,5 @@
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QListWidget, QStackedWidget, QPushButton, QCheckBox, QLabel, QLineEdit, QSpinBox
-from PyQt6.QtCore import pyqtSignal, Qt
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QListWidget, QStackedWidget, QPushButton, QCheckBox, QLabel, QLineEdit, QSpinBox
+from PySide6.QtCore import Signal as pyqtSignal, Qt
 
 class SettingsWindow(QWidget):
     signal_load = pyqtSignal()
