@@ -3,6 +3,7 @@ from tools.json_handler import JSONLoader
 from PyQt6.QtWidgets import QFileDialog
 from model.Grid import Grid
 from model.solveur import Solver
+from model.Grid_Generator import generation
 
 class Controller:
     def __init__(self, model, view):
@@ -20,6 +21,7 @@ class Controller:
         self._view.signal_cell_changed.connect(self.update_cell_value)
         self._view.signal_background_change.connect(self.on_change_background)
         self._view.signal_hint.connect(self.give_hint)
+        self._view.signal_generate_grid.connect(self.handle_generate)
 
         self._view.show()
         self._load_game()
@@ -54,7 +56,21 @@ class Controller:
         solver = Solver(self._model)
         solver.solve()
         self._init_view_from_model()
-        
+    
+    def handle_generate(self, row : int = 5, col: int = 5, pourcentage_given: float = 0.35):
+        print(f"[DEBUG] handle_generate appelé : row={row}, col={col}, pct={pourcentage_given}")
+        nb_pattern = (row * col) // 3
+        print(f"[DEBUG] Lancement génération...")
+        new_grid = generation(row, col, nb_pattern, pourcentage_given)
+        print(f"[DEBUG] Résultat génération : {new_grid}")
+        if new_grid is None:
+            print("Generation failed : ... retry")
+            return
+        self._model = new_grid
+        self._historic.clear()
+        self._view.rebuild_grid(self._model._row, self._model._column)
+        self._init_view_from_model()
+          
     def give_hint(self) -> bool:
         self._historic.append(self._model.get_state())
         

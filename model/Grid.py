@@ -20,7 +20,10 @@ class Grid:
         self._cell : list[list[Cell]] = []
         self._patterns : dict[int, Pattern] = {}    
         self._name  : str = Grid_name   
-        
+       
+    def get_dimensions(self) -> tuple:
+        return (self._row,self._column) 
+    
     def get_cell(self,coord : tuple) -> Cell:
         return self._cell[coord[0]][coord[1]]
     

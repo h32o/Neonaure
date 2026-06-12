@@ -1,6 +1,6 @@
 import sys
 import os 
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QMessageBox, QLabel, QPushButton, QHBoxLayout,QFileDialog,QGraphicsScene, QGraphicsPixmapItem, QGraphicsBlurEffect
+from PyQt6.QtWidgets import QApplication,QDialog, QMainWindow,QFormLayout, QSpinBox, QDoubleSpinBox, QDialogButtonBox, QWidget, QVBoxLayout, QMessageBox, QLabel, QPushButton, QHBoxLayout,QFileDialog,QGraphicsScene, QGraphicsPixmapItem, QGraphicsBlurEffect
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import QAction, QKeySequence,QPixmap,QPainter
 from .components.grid_widget import GridWidget
@@ -14,6 +14,7 @@ class MainWindow(QMainWindow):
     signal_hint = pyqtSignal()
     signal_cell_changed = pyqtSignal(int, int, str)
     signal_background_change = pyqtSignal(str)
+    signal_generate_grid = pyqtSignal(int,int,float)
 
     def __init__(self):
         super().__init__()
@@ -89,6 +90,7 @@ class MainWindow(QMainWindow):
         self._create_action(file_menu, "&Reset grid", "Ctrl+R", self.reset_grid)
         self._create_action(file_menu, "&Load grid", "Ctrl+L", self.load_grid)
         self._create_action(file_menu, "&Save grid", "Ctrl+S", self.save_grid)
+        self._create_action(file_menu, "&Generate grid", "Ctrl+N", self.generate_grid)
         self._create_action(file_menu, "&Quit", "Ctrl+Q", self.close)
 
         settings_menu = menu_bar.addMenu("&Settings")
@@ -181,6 +183,43 @@ class MainWindow(QMainWindow):
         if path:
             self.signal_save_grid.emit(path)
         print("Request to save the grid (Ctrl+S).")
+        
+    def generate_grid(self, checked=False):
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Générer une grille")
+
+        form = QFormLayout(dialog)
+
+        spin_row = QSpinBox()
+        spin_row.setRange(4, 12)
+        spin_row.setValue(8)
+        form.addRow("Lignes :", spin_row)
+
+        spin_col = QSpinBox()
+        spin_col.setRange(4, 12)
+        spin_col.setValue(8)
+        form.addRow("Colonnes :", spin_col)
+
+        spin_pct = QDoubleSpinBox()
+        spin_pct.setRange(0.1, 1.0)
+        spin_pct.setSingleStep(0.05)
+        spin_pct.setValue(0.35)
+        form.addRow("% cases données :", spin_pct)
+
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
+        buttons.accepted.connect(dialog.accept)
+        buttons.rejected.connect(dialog.reject)
+        form.addRow(buttons)
+
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            row = spin_row.value()
+            col = spin_col.value()
+            pct = spin_pct.value()
+            print(f"[DEBUG] generate_grid dialog : row={row}, col={col}, pct={pct}")
+            self.signal_generate_grid.emit(row, col, pct)
         
     def clear_grid(self):
         for cell in self.grid_widget.cells.values():

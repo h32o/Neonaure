@@ -7,28 +7,28 @@ class Solver():
     def __init__(self, grid : Grid):
         self._grid : Grid = grid
     
-    def get_domain(self,cell : Cell) -> list:
-        
+    def get_domain(self, cell):
         pattern = self._grid.get_pattern(cell.get_pattern_id())
-        value_list : list = [i for i in range(1,pattern.size + 1)]
-        
-        neighbor_values = set(cells.get_value() for cells in self._grid.get_neighbors(cell.get_row(),cell.get_column()))
-        
-        value_set = set(value_list) - pattern.current_values - neighbor_values
+        value_list = list(range(1, pattern.size + 1))
+        neighbor_values = {c.get_value() for c in self._grid.get_neighbors(cell.get_row(), cell.get_column())}
+        # Correction : conversion explicite en set
+        value_set = set(value_list) - set(pattern.current_values) - neighbor_values
+        if not value_set:
+            print(f"[DEBUG] domaine vide en ({cell.get_row()},{cell.get_column()}) pattern_size={pattern.size} current={pattern.current_values} neighbors={neighbor_values}")
         return list(value_set)
     
     def choose_cell(self) -> Cell:
+        minimal_cell = None
+        minimal_domain = float('inf')
         
-        minimal_cell : Cell = None
-        minimal_domain : int = 10
-        
-        for cells in self._grid.get_pattern_dict().values():
-            for cell in cells.get_cells():
+        for pattern in self._grid.get_pattern_dict().values():
+            for cell in pattern.get_cells():
                 if cell.is_empty():
-                    if len(self.get_domain(cell)) < minimal_domain:
-                        minimal_domain = len(self.get_domain(cell))
+                    domain_size = len(self.get_domain(cell))
+                    if domain_size < minimal_domain:
+                        minimal_domain = domain_size
                         minimal_cell = cell
-                
+        
         return minimal_cell
             
     def solve(self) -> bool:
