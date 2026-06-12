@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QSizePolicy
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import Qt, pyqtSignal, QSize
 from .cell_widget import CellWidget
 
 class GridWidget(QWidget):
@@ -9,12 +9,13 @@ class GridWidget(QWidget):
         super().__init__()
         self.max_lines = max_lines
         self.max_columns = max_columns
+
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.setMinimumSize(200, 200)
         
-   
         self.outer_layout = QVBoxLayout(self)
         self.outer_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
-  
         self.grid_container = QWidget()
         self.grid_layout = QGridLayout(self.grid_container)
         self.grid_layout.setSpacing(0)
@@ -29,9 +30,7 @@ class GridWidget(QWidget):
         for line in range(self.max_lines):
             for column in range(self.max_columns):
                 cell = CellWidget(line, column)
-            
                 cell.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-                
                 cell.textChanged.connect(self.on_cell_changed)
                 self.grid_layout.addWidget(cell, line, column)
                 self.cells[(line, column)] = cell
@@ -39,12 +38,15 @@ class GridWidget(QWidget):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         
-        
         raw_size = min(self.width(), self.height()) - 40 
-    
+
+        if raw_size < 0:
+            return 
+            
         clean_size = raw_size - (raw_size % self.max_columns)
         
-        self.grid_container.setFixedSize(clean_size, clean_size)
+        if clean_size > 0:
+            self.grid_container.setFixedSize(clean_size, clean_size)
 
     def on_cell_changed(self, text):
         cell = self.sender()

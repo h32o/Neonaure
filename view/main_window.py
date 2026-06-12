@@ -17,7 +17,6 @@ class MainWindow(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         
-        self.setMinimumSize(800, 600) 
         self.setStyleSheet("""
             QWidget {
                 background-color: #12121A;
@@ -27,8 +26,7 @@ class MainWindow(QWidget):
         main_vertical_layout = QVBoxLayout(self)
         main_vertical_layout.setContentsMargins(10, 10, 10, 10)
         main_vertical_layout.setSpacing(0)
-        
-        # ── Top bar ──
+   
         self.top_layout = QHBoxLayout()
         
         self.settings_button = QPushButton("☰")
@@ -84,7 +82,7 @@ class MainWindow(QWidget):
 
         main_vertical_layout.addLayout(self.top_layout, 0)
         
-        # ── Middle: settings + game ──
+       
         self.root_layout = QHBoxLayout()
         self.root_layout.setContentsMargins(0, 10, 0, 0)
         self.root_layout.setSpacing(0) 
@@ -112,12 +110,12 @@ class MainWindow(QWidget):
         
         self.root_layout.addWidget(self.game_widget, 1) 
         
-        self.game_layout.addStretch(1)
+        self.game_layout.addStretch(0)
 
         self.grid_widget = GridWidget()
         self.grid_widget.signal_cell_changed.connect(self.signal_cell_changed)
-        self.game_layout.addWidget(self.grid_widget, 0)
-        self.grid_widget.create_grid()
+        self.game_layout.addWidget(self.grid_widget, 1)
+       
         
         self.timer_label = QLabel("")
         self.timer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -136,7 +134,7 @@ class MainWindow(QWidget):
         self.game_layout.addWidget(self.timer_label, 0, Qt.AlignmentFlag.AlignHCenter)
         self.timer_label.setVisible(False)
 
-        self.game_layout.addStretch(1)
+        self.game_layout.addStretch(0)
 
         self.time_counter = 0
         self.timer = QTimer(self)

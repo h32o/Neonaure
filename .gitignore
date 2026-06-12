@@ -13,6 +13,7 @@ whl
 .whl
 
 .buildozer
+*.apk
 
 *.log
 

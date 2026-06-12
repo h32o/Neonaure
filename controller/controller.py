@@ -11,7 +11,7 @@ class Controller:
         self._menu_page = app_window.menu_page
         self._game_page = app_window.game_page
 
-        self._app_window.showFullScreen()
+        self._app_window.show()
 
         # Start on menu
         self._app_window.stack.setCurrentIndex(0)

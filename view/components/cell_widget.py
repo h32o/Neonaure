@@ -25,7 +25,7 @@ class CellWidget(QLineEdit):
         self.is_error = False
         
     
-        self.bold_borders = {'top': "0s.5px solid lightgray",
+        self.bold_borders = {'top': "0.5px solid lightgray",
                              'right': "0.5px solid lightgray", 
                              'bottom': "0.5px solid lightgray", 
                              'left': "0.5px solid lightgray"} 
@@ -41,7 +41,7 @@ class CellWidget(QLineEdit):
         
         if right_bold:
             self.bold_borders['right'] = BOLD_BORDER 
-        else:
+        else :
             self.bold_borders['right'] = NORMAL_BORDER
             
         if bottom_bold:
