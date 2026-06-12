@@ -1,10 +1,5 @@
-<<<<<<< HEAD
 from PySide6.QtWidgets import QWidget, QGridLayout
 from PySide6.QtCore import Qt, Signal as pyqtSignal
-=======
-from PyQt6.QtWidgets import QWidget, QGridLayout
-from PyQt6.QtCore import Qt, pyqtSignal
->>>>>>> dev
 from .cell_widget import CellWidget
 
 class GridWidget(QWidget):
