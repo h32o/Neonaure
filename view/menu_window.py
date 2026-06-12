@@ -1,15 +1,18 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel
-from PySide6.QtCore import Qt, Signal as pyqtSignal
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QPushButton, QLabel
+from PyQt6.QtCore import Qt, pyqtSignal
 import sys
 
 
-class MenuWindow(QWidget):                          
+class MenuWindow(QMainWindow):
     signal_start_game = pyqtSignal()
-    def __init__(self, parent=None):                
-        super().__init__(parent)                    
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Néonaure - Menu")
         self.setMinimumSize(800, 600)
 
-        self.setStyleSheet("""                    
+        central = QWidget()
+        self.setCentralWidget(central)
+        central.setStyleSheet("""
             QWidget {
                 background-color: #12121A;
             }
@@ -26,7 +29,7 @@ class MenuWindow(QWidget):
             }
         """)
 
-        main_layout = QVBoxLayout(self)
+        main_layout = QVBoxLayout(central)
         main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         play_button = QPushButton("Play")
@@ -48,12 +51,17 @@ class MenuWindow(QWidget):
 
         quit_button = QPushButton("Quit")
         quit_button.setFixedSize(200, 50)
-        quit_button.clicked.connect(self.start_quit)
+        quit_button.clicked.connect(self.close)
         main_layout.addWidget(quit_button)
+
+        self._main_window = None
 
     def start_game(self):
         self.signal_start_game.emit()
 
-    def start_quit(self):
-        from PySide6.QtWidgets import QApplication
-        QApplication.instance().quit()
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = MenuWindow()
+    window.show()
+    sys.exit(app.exec())

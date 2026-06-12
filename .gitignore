@@ -15,5 +15,6 @@ whl
 .buildozer
 
 *.log
+*.apk
 
 deployment
