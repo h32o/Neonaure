@@ -202,9 +202,9 @@ class MainWindow(QMainWindow):
         form.addRow("Colonnes :", spin_col)
 
         spin_pct = QDoubleSpinBox()
-        spin_pct.setRange(0.1, 1.0)
-        spin_pct.setSingleStep(0.05)
-        spin_pct.setValue(0.35)
+        spin_pct.setRange(0,100)
+        spin_pct.setSingleStep(5)
+        spin_pct.setValue(35)
         form.addRow("% cases données :", spin_pct)
 
         buttons = QDialogButtonBox(
@@ -217,7 +217,9 @@ class MainWindow(QMainWindow):
         if dialog.exec() == QDialog.DialogCode.Accepted:
             row = spin_row.value()
             col = spin_col.value()
-            pct = spin_pct.value()
+            
+            pct = spin_pct.value()/100
+            print(f"DEBUG {pct}")
             print(f"[DEBUG] generate_grid dialog : row={row}, col={col}, pct={pct}")
             self.signal_generate_grid.emit(row, col, pct)
         

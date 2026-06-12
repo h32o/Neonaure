@@ -28,9 +28,6 @@ def generation(row, col, nb_pattern, pourcentage_given):
 
     for attempt in range(500):
 
-        # ------------------------------------------------------------------ #
-        # ÉTAPE 1 — Remplissage de la grille (contrainte Moore uniquement)   #
-        # ------------------------------------------------------------------ #
         MAX_VAL = 4
         grid_vals = [[0] * col for _ in range(row)]
 
@@ -53,11 +50,8 @@ def generation(row, col, nb_pattern, pourcentage_given):
             return False
 
         if not fill_grid(0):
-            continue  # très rare, on retente
+            continue 
 
-        # ------------------------------------------------------------------ #
-        # ÉTAPE 2 — Partition en motifs connexes à valeurs distinctes        #
-        # ------------------------------------------------------------------ #
         assigned  = [[-1] * col for _ in range(row)]
         pat_groups = {}   # pid -> list[(r, c)]
         pid = 1
@@ -69,7 +63,6 @@ def generation(row, col, nb_pattern, pourcentage_given):
             if assigned[sr][sc] != -1:
                 continue
 
-            # Taille cible : 2 ou 3 (favoriser 2 pour maximiser la compatibilité)
             target = random.choice([2, 2, 3])
             group      = [(sr, sc)]
             group_vals = {grid_vals[sr][sc]}
@@ -93,9 +86,6 @@ def generation(row, col, nb_pattern, pourcentage_given):
                     frontier.append((nr, nc))
                 else:
                     frontier.remove((r2, c2))
-
-            # Si le groupe est resté à taille 1, tenter une fusion avec un
-            # motif orthogonal voisin de taille < 3 dont les valeurs sont distinctes.
             if len(group) == 1:
                 sr0, sc0 = group[0]
                 v0 = grid_vals[sr0][sc0]
@@ -129,11 +119,28 @@ def generation(row, col, nb_pattern, pourcentage_given):
             for g in pat_groups.values()
         )
         if not valid_pats:
-            continue
+            for p_id, group in pat_groups.items():
+                valeurs_actuelles = sorted(set(grid_vals[r][c] for r, c in group))
+                correspondance = {ancien: nouveau for nouveau, ancien in enumerate(valeurs_actuelles, start=1)}
+                for r, c in group:
+                    grid_vals[r][c] = correspondance[grid_vals[r][c]]
 
-        # ------------------------------------------------------------------ #
-        # Construction des objets Grid / Pattern / Cell                      #
-        # ------------------------------------------------------------------ #
+            moore_ok = True
+            for r in range(row):
+                for c in range(col):
+                    for dr, dc in moore_dirs:
+                        nr, nc = r + dr, c + dc
+                        if 0 <= nr < row and 0 <= nc < col:
+                            if grid_vals[r][c] == grid_vals[nr][nc]:
+                                moore_ok = False
+                                break
+                    if not moore_ok:
+                        break
+                if not moore_ok:
+                    break
+
+            if not moore_ok:
+                continue
         final_grid = Grid((row, col), "gen")
         final_grid._cell     = [[None] * col for _ in range(row)]
         final_grid._patterns = {}
@@ -146,9 +153,6 @@ def generation(row, col, nb_pattern, pourcentage_given):
                 final_grid._cell[r][c] = cell
                 pat.cells.append(cell)
 
-        # ------------------------------------------------------------------ #
-        # ÉTAPE 3 — Masquage des cellules (given / à remplir)                #
-        # ------------------------------------------------------------------ #
         toutes = [final_grid._cell[r][c] for r in range(row) for c in range(col)]
         random.shuffle(toutes)
         nb_garder = max(1, int(len(toutes) * pourcentage_given))
@@ -160,6 +164,4 @@ def generation(row, col, nb_pattern, pourcentage_given):
                 cell.set_value(0)
 
         return final_grid
-
-    # En pratique cette ligne n'est jamais atteinte
     return None

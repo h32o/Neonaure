@@ -55,6 +55,8 @@ class Controller:
         self._historic.append(self._model.get_state())
         solver = Solver(self._model)
         solver.solve()
+        if self._model.is_solved():
+            print("nickel")
         self._init_view_from_model()
     
     def handle_generate(self, row : int = 5, col: int = 5, pourcentage_given: float = 0.35):
