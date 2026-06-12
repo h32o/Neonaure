@@ -33,7 +33,7 @@ class CellWidget(QLineEdit):
         
     def set_borders(self, top_bold, right_bold, bottom_bold, left_bold):
         BOLD_BORDER = "1.5px solid black"
-        NORMAL_BORDER = "0.5px solid #474747"
+        NORMAL_BORDER = "0.5px solid #C8C0C0"
 
         if top_bold:
             self.bold_borders['top'] = BOLD_BORDER
@@ -60,7 +60,7 @@ class CellWidget(QLineEdit):
 
     def _apply_cell_style(self):
         if self.isReadOnly():
-            background_color = "#ADADAD"
+            background_color = "#B6B6B6"
         elif self.is_error:
             background_color = "#FFCCCC" 
         else:
