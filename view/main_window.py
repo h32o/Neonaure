@@ -4,6 +4,7 @@ from PySide6.QtCore import Signal as pyqtSignal, QTimer, Qt
 from .components.grid_widget import GridWidget
 from .settings_window import SettingsWindow
 
+
 class MainWindow(QWidget):
     signal_load_grid = pyqtSignal()
     signal_save_grid = pyqtSignal()
@@ -16,7 +17,7 @@ class MainWindow(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         
-        self.setMinimumSize(800, 600) 
+       
         self.setStyleSheet("""
             QWidget {
                 background-color: #12121A;
@@ -56,7 +57,8 @@ class MainWindow(QWidget):
         main_vertical_layout.addLayout(self.root_layout, 1)
         
         self.settings_panel = SettingsWindow()
-        self.settings_panel.setFixedWidth(350) 
+        self.settings_panel.setMinimumWidth(150)
+        self.settings_panel.setMaximumWidth(350)
         self.settings_panel.hide() 
 
         self.settings_panel.signal_load.connect(self.load_grid)

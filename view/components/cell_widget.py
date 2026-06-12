@@ -12,7 +12,6 @@ class CellWidget(QLineEdit):
         self.setValidator(validator)
         self.setMaxLength(1)
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.setFixedSize(50, 50) 
 
         self.setStyleSheet("""
             background-color: white;
