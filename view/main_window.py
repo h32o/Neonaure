@@ -3,6 +3,9 @@ import os
 from PyQt6.QtWidgets import QApplication,QDialog, QMainWindow,QFormLayout, QSpinBox, QDoubleSpinBox, QDialogButtonBox, QWidget, QVBoxLayout, QMessageBox, QLabel, QPushButton, QHBoxLayout,QFileDialog,QGraphicsScene, QGraphicsPixmapItem, QGraphicsBlurEffect
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import QAction, QKeySequence,QPixmap,QPainter
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QMessageBox, QLabel, QPushButton, QHBoxLayout
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal
+from PyQt6.QtGui import QAction, QKeySequence
 from .components.grid_widget import GridWidget
 
 class MainWindow(QMainWindow):

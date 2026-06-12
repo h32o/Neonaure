@@ -3,6 +3,7 @@ from model.Cell import Cell
 import sys
 import os
 
+
 class Solver():
     def __init__(self, grid : Grid):
         self._grid : Grid = grid
