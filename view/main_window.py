@@ -1,35 +1,35 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QMessageBox, QPushButton, QHBoxLayout, QLabel
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QMessageBox, QPushButton, QHBoxLayout, QLabel
 from PyQt6.QtCore import pyqtSignal, QTimer, Qt
 from .components.grid_widget import GridWidget
 from .settings_window import SettingsWindow
 
-class MainWindow(QMainWindow):
+class MainWindow(QWidget):
     signal_load_grid = pyqtSignal()
     signal_save_grid = pyqtSignal()
     signal_reset_grid = pyqtSignal()
     signal_solve_grid = pyqtSignal()
     signal_undo = pyqtSignal()
     signal_cell_changed = pyqtSignal(int, int, str)
+    signal_back_to_menu = pyqtSignal()
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent)
         
-        self.setWindowTitle("Néonaure")
         self.setMinimumSize(800, 600) 
-        widget_central = QWidget()
-        self.setCentralWidget(widget_central)
-        widget_central.setStyleSheet("""
+        self.setStyleSheet("""
             QWidget {
                 background-color: #12121A;
             }
         """)
         
-        main_vertical_layout = QVBoxLayout(widget_central)
+        main_vertical_layout = QVBoxLayout(self)
         main_vertical_layout.setContentsMargins(10, 10, 10, 10)
         main_vertical_layout.setSpacing(0)
         
+        # ── Top bar ──
         self.top_layout = QHBoxLayout()
+        
         self.settings_button = QPushButton("☰")
         self.settings_button.setFixedSize(40, 40)
         self.settings_button.setStyleSheet("""
@@ -49,6 +49,7 @@ class MainWindow(QMainWindow):
         self.top_layout.addStretch() 
         main_vertical_layout.addLayout(self.top_layout, 0)
         
+        # ── Middle: settings + game ──
         self.root_layout = QHBoxLayout()
         self.root_layout.setContentsMargins(0, 10, 0, 0)
         self.root_layout.setSpacing(0) 
@@ -61,7 +62,7 @@ class MainWindow(QMainWindow):
         self.settings_panel.signal_load.connect(self.load_grid)
         self.settings_panel.signal_save.connect(self.save_grid)
         self.settings_panel.signal_reset.connect(self.reset_grid)
-        self.settings_panel.signal_quit.connect(QApplication.instance().quit)
+        self.settings_panel.signal_quit.connect(self.signal_back_to_menu.emit)
         self.settings_panel.signal_toggle_timer.connect(self.toggle_timer)
         
         self.root_layout.addWidget(self.settings_panel)
@@ -87,6 +88,7 @@ class MainWindow(QMainWindow):
         self.timer.timeout.connect(self.update_timer_display)
         self.timer.start(1000)
         
+        # ── Bottom bar ──
         self.bottom_layout = QHBoxLayout()
         
         self.undo_button = QPushButton("↶")
