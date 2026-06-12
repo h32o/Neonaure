@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QMe
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import QAction, QKeySequence
 from .components.grid_widget import GridWidget
+from view.settings_window import SettingsWindow
 
 class MainWindow(QMainWindow):
     signal_load_grid = pyqtSignal(str)
@@ -18,102 +19,157 @@ class MainWindow(QMainWindow):
     signal_cell_changed = pyqtSignal(int, int, str)
     signal_background_change = pyqtSignal(str)
     signal_generate_grid = pyqtSignal(int,int,float)
-
-    def __init__(self):
-        super().__init__()
+    signal_back_to_menu = pyqtSignal()
     
-        self.setWindowTitle("Néonaure")
-        self.setMinimumSize(600, 600)
-        
-        self.bg_label = QLabel()
-        self.bg_label.setScaledContents(True)
-        self.setCentralWidget(self.bg_label)
-        self.main_layout = QVBoxLayout(self.bg_label)
-         
-        """widget_central = QWidget()
-        self.setCentralWidget(widget_central)
-        self.main_layout = QVBoxLayout(widget_central)"""
-        self.init_menu()
+    def __init__(self, parent=None):
+            super().__init__(parent)
+            
+            self.setMinimumSize(800, 600) 
+            self.setStyleSheet("""
+                QWidget {
+                    background-color: #12121A;
+                }
+            """)
+            self.bg_label = QLabel()
+            self.bg_label.setScaledContents(True)
+            self.setCentralWidget(self.bg_label)
+            main_vertical_layout = QVBoxLayout(self.bg_label)
+            main_vertical_layout.setContentsMargins(10, 10, 10, 10)
+            main_vertical_layout.setSpacing(0)
+            
+            """widget_central = QWidget()
+            self.setCentralWidget(widget_central)
+            self.main_layout = QVBoxLayout(widget_central)"""
+            """self.init_menu()"""
+            
+            
+            # ── Top bar ──
+            self.top_layout = QHBoxLayout()
+            
+            self.settings_button = QPushButton("☰")
+            self.settings_button.setFixedSize(40, 40)
+            self.settings_button.setStyleSheet("""
+            QPushButton {
+                background-color: #2A2A35; 
+                color: #E0E0FF; 
+                border-radius: 5px; 
+                border: 1px solid #383A59;
+                font-size: 25px;
+            }
+            QPushButton:hover {
+                background-color: #383A59;
+            }
+            """)
+            self.settings_button.clicked.connect(self.toggle_settings) 
+            self.top_layout.addWidget(self.settings_button) 
+            self.top_layout.addStretch() 
+            main_vertical_layout.addLayout(self.top_layout, 0)
+            
+            # ── Middle: settings + game ──
+            self.root_layout = QHBoxLayout(self.bg_label)
+            self.root_layout.setContentsMargins(0, 10, 0, 0)
+            self.root_layout.setSpacing(0) 
+            main_vertical_layout.addLayout(self.root_layout, 1)
+            
+            self.settings_panel = SettingsWindow()
+            self.settings_panel.setFixedWidth(350) 
+            self.settings_panel.hide() 
 
-        self.time_counter = 0
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_timer_display)
-        
-        self.grid_widget = GridWidget()
-        self.grid_widget.signal_cell_changed.connect(self.signal_cell_changed)
-        self.main_layout.addWidget(self.grid_widget)
-        self.grid_widget.create_grid(8,8)
-        
-        self.bottom_layout = QHBoxLayout()
-        
-        self.undo_button = QPushButton("↶")
-        self.undo_button.setShortcut(QKeySequence("Ctrl+Z"))
-        self.undo_button.setFixedSize(50, 50)
-        self.undo_button.setStyleSheet("""
-                background-color: grey; 
-                color: white; 
+            self.settings_panel.signal_load.connect(self.load_grid)
+            self.settings_panel.signal_save.connect(self.save_grid)
+            self.settings_panel.signal_reset.connect(self.reset_grid)
+            self.settings_panel.signal_quit.connect(self.signal_back_to_menu.emit)
+            self.settings_panel.signal_toggle_timer.connect(self.toggle_timer)
+            self.settings_panel.signal_background_change.connect(self.change_background)
+            self.root_layout.addWidget(self.settings_panel)
+
+            self.game_widget = QWidget()
+            self.game_layout = QVBoxLayout(self.game_widget)
+            self.game_layout.setContentsMargins(0, 0, 0, 0)
+
+            self.root_layout.addWidget(self.game_widget, 1)
+
+            # Label de fond UNIQUEMENT derrière la grille
+            self.grid_bg_label = QLabel(self.game_widget)
+            self.grid_bg_label.setScaledContents(True)
+            self.grid_bg_label.setGeometry(0, 0, 1, 1)  # sera repositionné par resizeEvent
+
+            self.grid_widget = GridWidget()
+            self.grid_widget.signal_cell_changed.connect(self.signal_cell_changed)
+            self.game_layout.addWidget(self.grid_widget, 1)
+            self.grid_widget.create_grid()
+            
+            self.timer_label = QLabel("") 
+            self.timer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.timer_label.setStyleSheet("font-size: 18px; font-weight: bold; color: #ffffff; margin-top: 10px; margin-bottom: 10px;")
+            self.game_layout.addWidget(self.timer_label, 0)
+            
+            self.time_counter = 0
+            self.timer = QTimer(self)
+            self.timer.timeout.connect(self.update_timer_display)
+            self.timer.start(1000)
+            
+            # ── Bottom bar ──
+            self.bottom_layout = QHBoxLayout()
+            
+            self.undo_button = QPushButton("↶")
+            self.undo_button.setShortcut("Ctrl+Z")
+            self.undo_button.setFixedSize(50, 50)
+            self.undo_button.setStyleSheet("""
+            QPushButton {
+                background-color: #2A2A35; 
+                color: #E0E0FF; 
                 border-radius: 10px; 
-                """)
-        self.undo_button.clicked.connect(self.undo)
-        self.bottom_layout.addWidget(self.undo_button)
-        
-        self.hint_button = QPushButton("💡")
-        self.hint_button.setShortcut(QKeySequence("Ctrl+H"))
-        self.hint_button.setFixedSize(50, 50)
-        self.hint_button.setStyleSheet("""
-                background-color: gold; 
-                color: white; 
+                border: 1px solid #383A59;
+                font-size: 25px;
+                margin-left: 10px;
+            }
+            QPushButton:hover {
+                background-color: #383A59;
+            }
+            """)
+            self.undo_button.clicked.connect(self.undo)
+            self.bottom_layout.addWidget(self.undo_button)
+
+            self.hint_button = QPushButton("💡")
+            self.hint_button.setShortcut(QKeySequence("Ctrl+H"))
+            self.hint_button.setFixedSize(50, 50)
+            self.hint_button.setStyleSheet("""
+                    background-color: gold; 
+                    color: white; 
+                    border-radius: 10px; 
+                    """)
+            self.hint_button.clicked.connect(self.give_hint)
+            self.bottom_layout.addWidget(self.hint_button)
+            
+            self.hint_timer = QTimer(self)
+            self.hint_cooldown = 0
+            self.hint_timer.timeout.connect(self.update_hint_cooldown)
+            
+            self.bottom_layout.addStretch()
+
+            self.solve_button = QPushButton("✓")
+            self.solve_button.setFixedSize(50, 50)
+            self.solve_button.setStyleSheet("""
+            QPushButton {
+                background-color: #9D4EDD; 
+                color: #E0E0FF; 
                 border-radius: 10px; 
-                """)
-        self.hint_button.clicked.connect(self.give_hint)
-        self.bottom_layout.addWidget(self.hint_button)
-        
-        self.hint_cooldown = 0
-        self.hint_timer = QTimer(self)
-        self.hint_timer.timeout.connect(self.update_hint_cooldown)
-
-        self.bottom_layout.addStretch()
-
-        self.solve_button = QPushButton("✓")
-        self.solve_button.setFixedSize(50, 50)
-        self.solve_button.setStyleSheet("""
-                background-color: green; 
-                color: white; 
-                border-radius: 10px; 
-                """)
-        self.solve_button.clicked.connect(self.solve_grid)
-        self.bottom_layout.addWidget(self.solve_button)
-        
-        self.main_layout.addLayout(self.bottom_layout)
-    
-    def init_menu(self):
-        menu_bar = self.menuBar() 
-
-        file_menu = menu_bar.addMenu("&File")
-        self._create_action(file_menu, "&Reset grid", "Ctrl+R", self.reset_grid)
-        self._create_action(file_menu, "&Load grid", "Ctrl+L", self.load_grid)
-        self._create_action(file_menu, "&Save grid", "Ctrl+S", self.save_grid)
-        self._create_action(file_menu, "&Generate grid", "Ctrl+N", self.generate_grid)
-        self._create_action(file_menu, "&Quit", "Ctrl+Q", self.close)
-
-        settings_menu = menu_bar.addMenu("&Settings")
-        
-        self.show_timer_action = QAction("Show timer", self, checkable=True)
-        self.show_timer_action.triggered.connect(self.toggle_timer)
-        settings_menu.addAction(self.show_timer_action)
-        
-        self._create_action(settings_menu, "&Game Rules", "Ctrl+G", self.show_rules)
-
-        Theme_menu = menu_bar.addMenu("&Theme")
-        
-        self._create_action(Theme_menu, "&Change background-image", "Ctrl+B", self.change_background)
-        
-        
-        self.timer_label = QLabel("0s  ", self) 
-        self.timer_label.setStyleSheet("font-size: 13px; font-weight: bold; color: #ffffff; margin-right: 70px;")
-        self.timer_label.hide()  
-        
-        menu_bar.setCornerWidget(self.timer_label, Qt.Corner.TopRightCorner)
+                border: none;
+                font-size: 25px;
+            }
+            QPushButton:hover {
+                background-color: #B57EDC;
+            }
+            """)
+            self.solve_button.clicked.connect(self.solve_grid)
+            self.bottom_layout.addWidget(self.solve_button)
+            
+            self.game_layout.addLayout(self.bottom_layout, 0)
+            
+            self.timer_enabled = False
+            
+            self.settings_panel.signal_generate.connect(self.generate_grid)
 
     def _create_action(self, menu, text, shortcut, slot_function):
         action = QAction(text, self)
@@ -139,12 +195,30 @@ class MainWindow(QMainWindow):
         msg.setWindowTitle("Congratulations !")
         msg.setText("Nice bro, you did it!")
         msg.exec()
-
+        
+    def toggle_settings(self):
+        if self.settings_panel.isVisible():
+            self.settings_panel.hide()
+        else:
+            self.settings_panel.show()
+          
     def update_timer_display(self):
         self.time_counter += 1
-        self.timer_label.setText(f"{self.time_counter}s")
-    
-    def start_hint_cooldown(self,seconds = 1000):
+        if self.timer_enabled:
+            minutes = self.time_counter // 60
+            seconds = self.time_counter % 60
+            self.timer_label.setText(f"{minutes}:{seconds:02d}")
+            
+    def toggle_timer(self, is_checked):
+        self.timer_enabled = is_checked
+        if is_checked:
+            minutes = self.time_counter // 60
+            seconds = self.time_counter % 60
+            self.timer_label.setText(f"{minutes}:{seconds:02d}")
+        else:
+            self.timer_label.setText("")
+            
+    def start_hint_cooldown(self,seconds = 60):
         self.hint_cooldown = seconds
         self.hint_button.setEnabled(False)
         self.hint_button.setText(str(seconds))
@@ -247,14 +321,6 @@ class MainWindow(QMainWindow):
     def give_hint(self):
         print("Request to give an hint")
         self.signal_hint.emit()
-        
-    def toggle_timer(self):
-        if self.show_timer_action.isChecked():
-            self.timer_label.show()       
-            self.timer.start(1000)        
-        else:
-            self.timer_label.hide()       
-            self.timer.stop()
     
     def update_cell(self, row, col, value):
         cell = self.grid_widget.cells[(row, col)]
@@ -286,10 +352,10 @@ class MainWindow(QMainWindow):
             pixmap = QPixmap(path)
             if not pixmap.isNull():
                 small = pixmap.scaled(
-                pixmap.width() // 40,
-                pixmap.height() // 40,
-                Qt.AspectRatioMode.KeepAspectRatio,
-                Qt.TransformationMode.SmoothTransformation
+                    pixmap.width() // 40,
+                    pixmap.height() // 40,
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation
                 )
                 blurred = small.scaled(
                     pixmap.width(),
@@ -297,7 +363,15 @@ class MainWindow(QMainWindow):
                     Qt.AspectRatioMode.KeepAspectRatio,
                     Qt.TransformationMode.SmoothTransformation
                 )
-                self.bg_label.setPixmap(blurred)
+                self.grid_bg_label.setPixmap(blurred)
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if hasattr(self, 'grid_widget'):
+            geo = self.grid_widget.geometry()
+            # Convertir en coordonnées de game_widget
+            pos = self.grid_widget.mapTo(self.game_widget, geo.topLeft())
+            self.grid_bg_label.setGeometry(pos.x(), pos.y(), geo.width(), geo.height())
+               
                 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
