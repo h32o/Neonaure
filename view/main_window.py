@@ -1,13 +1,11 @@
-import sys
-import os 
-from PyQt6.QtWidgets import QApplication,QDialog, QMainWindow,QFormLayout, QSpinBox, QDoubleSpinBox, QDialogButtonBox, QWidget, QVBoxLayout, QMessageBox, QLabel, QPushButton, QHBoxLayout,QFileDialog,QGraphicsScene, QGraphicsPixmapItem, QGraphicsBlurEffect
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal
-from PyQt6.QtGui import QAction, QKeySequence,QPixmap,QPainter
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QMessageBox, QLabel, QPushButton, QHBoxLayout
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal
-from PyQt6.QtGui import QAction, QKeySequence
+import os, sys, glob, json
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QMessageBox, QLabel, QPushButton, QHBoxLayout,QScrollArea,QApplication,QDialog, QMainWindow,QFormLayout, QSpinBox, QDoubleSpinBox, QDialogButtonBox, QWidget, QVBoxLayout, QMessageBox, QLabel, QPushButton, QHBoxLayout,QFileDialog,QGraphicsScene, QGraphicsPixmapItem, QGraphicsBlurEffect
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QPropertyAnimation, QEasingCurve
+from PyQt6.QtGui import QAction, QKeySequence,QPixmap,QPainter,QColor, QPen
 from .components.grid_widget import GridWidget
 from view.settings_window import SettingsWindow
+from view.components.grid_carrousel import GridCarousel
+from view.components.grid_thumbnail import GridThumbnail
 
 class BackgroundWidget(QWidget):
     """Widget qui dessine une image floue en fond derrière ses enfants."""
@@ -116,21 +114,58 @@ class MainWindow(QMainWindow):
             self.grid_widget.signal_cell_changed.connect(self.signal_cell_changed)
             self.game_layout.addWidget(self.grid_widget, 1)
             self.grid_widget.create_grid()
-
-
             
-            self.timer_label = QLabel("") 
+            # ── Timer label ──
+            self.timer_label = QLabel("")
             self.timer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self.timer_label.setStyleSheet("font-size: 18px; font-weight: bold; color: #ffffff; margin-top: 10px; margin-bottom: 10px;")
             self.game_layout.addWidget(self.timer_label, 0)
-            
+
             self.time_counter = 0
             self.timer = QTimer(self)
             self.timer.timeout.connect(self.update_timer_display)
             self.timer.start(1000)
             
+            
             # ── Bottom bar ──
             self.bottom_layout = QHBoxLayout()
+            
+            # ── Carousel panel (close) ──
+            self.carousel_panel = QWidget()
+            self.carousel_panel.setMaximumHeight(0)
+            self.carousel_panel.setStyleSheet("background-color: #1A1A28; border-top: 1px solid #383A59;")
+            
+            cp_layout = QHBoxLayout(self.carousel_panel)
+            cp_layout.setContentsMargins(12, 8, 12, 8)
+            
+            scroll = QScrollArea()
+            scroll.setWidgetResizable(True)
+            scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+            scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+            scroll.setStyleSheet("border: none; background: transparent;")
+            
+            thumb_container = QWidget()
+            thumb_container.setStyleSheet("background: transparent;")
+            
+            self._thumbs_layout = QHBoxLayout(thumb_container)
+            self._thumbs_layout.setSpacing(12)
+            self._thumbs_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+            for path in sorted(glob.glob(os.path.join("examples/", "*.json"))):
+                name = os.path.splitext(os.path.basename(path))[0]
+                thumb = GridThumbnail(path, name)
+                thumb.clicked.connect(self._on_grid_selected)
+                self._thumbs_layout.addWidget(thumb)
+            scroll.setWidget(thumb_container)
+            
+            cp_layout.addWidget(scroll)
+            self.game_layout.addWidget(self.carousel_panel, 0)
+            
+            self._carousel_anim = QPropertyAnimation(self.carousel_panel, b"maximumHeight")
+            self._carousel_anim.setDuration(280)
+            self._carousel_anim.setEasingCurve(QEasingCurve.Type.InOutQuad)
+            self._carousel_open = False
+
+            # ── Bottom bar ──
             
             self.undo_button = QPushButton("↶")
             self.undo_button.setShortcut("Ctrl+Z")
@@ -158,6 +193,7 @@ class MainWindow(QMainWindow):
                     background-color: gold; 
                     color: white; 
                     border-radius: 10px; 
+                    font-size: 50px;
                     """)
             self.hint_button.clicked.connect(self.give_hint)
             self.bottom_layout.addWidget(self.hint_button)
@@ -166,6 +202,20 @@ class MainWindow(QMainWindow):
             self.hint_cooldown = 0
             self.hint_timer.timeout.connect(self.update_hint_cooldown)
             
+            self.bottom_layout.addStretch()
+
+            self.carousel_btn = QPushButton("▼  Grilles")
+            self.carousel_btn.setFixedSize(160, 80)
+            self.carousel_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #1E6E6E; color: #E0E0FF;
+                border-radius: 10px; border: none; font-size: 22px;
+            }
+            QPushButton:hover { background-color: #28908F; }
+            """)
+            self.carousel_btn.clicked.connect(self.toggle_carousel)
+            self.bottom_layout.addWidget(self.carousel_btn)
+
             self.bottom_layout.addStretch()
 
             self.solve_button = QPushButton("✓")
@@ -198,6 +248,32 @@ class MainWindow(QMainWindow):
         menu.addAction(action)
         return action 
 
+    def _on_grid_selected(self, path: str):
+        self.signal_load_grid.emit(path)
+        self._close_carousel()
+
+    def toggle_carousel(self):
+        if self._carousel_open:
+            self._close_carousel()
+        else:
+            self._open_carousel()
+
+    def _open_carousel(self):
+        self._carousel_open = True
+        self.carousel_btn.setText("▲  Grilles")
+        self._carousel_anim.stop()
+        self._carousel_anim.setStartValue(self.carousel_panel.maximumHeight())
+        self._carousel_anim.setEndValue(210)
+        self._carousel_anim.start()
+
+    def _close_carousel(self):
+        self._carousel_open = False
+        self.carousel_btn.setText("▼  Grilles")
+        self._carousel_anim.stop()
+        self._carousel_anim.setStartValue(self.carousel_panel.maximumHeight())
+        self._carousel_anim.setEndValue(0)
+        self._carousel_anim.start()
+        
     def show_rules(self):
         rules_box = QMessageBox(self)
         rules_box.setWindowTitle("Rules of the Néonaure")   
