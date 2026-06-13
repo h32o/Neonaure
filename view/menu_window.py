@@ -1,11 +1,26 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel
+"""
+Module for the menu window.
+
+Provides  a clean interface for the user to start a new game or exit the application.
+"""
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QApplication
 from PyQt6.QtCore import Qt, pyqtSignal
 import sys
 
+class MenuWindow(QWidget):    
+    """
+    Main menu window for the Néonaure application.
 
-class MenuWindow(QWidget):                          
+    This window serves as the starting point for the user, offering the choice to start a new game or exit the application.
+
+    Signals:
+    signal_start_game (pyqtSignal): Emitted when the user clicks the start game button.
+    """                      
     signal_start_game = pyqtSignal()
-    def __init__(self, parent=None):                
+    def __init__(self, parent=None):    
+        """
+        Initialize the menu window and set up the layout and buttons.
+        """            
         super().__init__(parent)                    
 
         self.setStyleSheet("""                    
@@ -51,8 +66,13 @@ class MenuWindow(QWidget):
         main_layout.addWidget(quit_button)
 
     def start_game(self):
+        """
+        Ask for start the game by emmiting a signal.
+        """
         self.signal_start_game.emit()
 
     def start_quit(self):
-        from PySide6.QtWidgets import QApplication
+        """
+        Ask for quitting the application by emitting a signal.
+        """
         QApplication.instance().quit()

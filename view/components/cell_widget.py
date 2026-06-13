@@ -1,10 +1,28 @@
+"""
+Module for the cell widget.
+
+This widget is a line edit that allows the user to enter a number in the cell.
+"""
 from PyQt6.QtWidgets import QLineEdit
 from PyQt6.QtCore import Qt, QRegularExpression
 from PyQt6.QtGui import QRegularExpressionValidator
 
 
 class CellWidget(QLineEdit):
+    """
+    A widget representing a cell in the grid.
+
+    It derives from QLineEdit and allows the user to enter a number in the cell between 1 and 5.
+    It also allows the user to set the borders of the cell.
+    """
     def __init__(self, line, column):
+        """
+        Initialise the cell widget,setup input validation and style.
+
+        Args:
+            line (int): The line of the cell.
+            column (int): The column of the cell.
+        """
         super().__init__()
         
         regex = QRegularExpression("^[1-5]$")
@@ -31,6 +49,15 @@ class CellWidget(QLineEdit):
                              'left': "0.5px solid lightgray"} 
         
     def set_borders(self, top_bold, right_bold, bottom_bold, left_bold):
+        """
+        Update the borders of the cell widget.
+
+        Args:
+            top_bold (bool): True to make the top border bold.
+            right_bold (bool): True to make the right border bold.
+            bottom_bold (bool): True to make the bottom border bold.
+            left_bold (bool): True to make the left border bold.
+        """
         BOLD_BORDER = "1.5px solid black"
         NORMAL_BORDER = "0.5px solid #474747"
 
@@ -58,6 +85,9 @@ class CellWidget(QLineEdit):
 
 
     def _apply_cell_style(self):
+        """
+        Apply the style to the cell widget based on its state(read-only, error, or default).
+        """
         if self.isReadOnly():
             background_color = "#ADADAD"
         elif self.is_error:
@@ -78,6 +108,12 @@ class CellWidget(QLineEdit):
         """)
 
     def set_value(self, value):
+        """
+        Set the value of the cell widget.
+
+        Args:
+            value (int): The value of the cell widget.
+        """
         self.setText(str(value))
         self.setReadOnly(True)
         self.is_error = False
@@ -85,12 +121,21 @@ class CellWidget(QLineEdit):
 
 
     def set_error(self, is_error):
+        """
+        Set the error state of the cell widget.
+
+        Args:
+            is_error (bool): True if the cell widget is in error state, False otherwise.
+        """
         if not self.isReadOnly():
             self.is_error = is_error
             self._apply_cell_style()
 
 
     def clear_cell(self):
+        """
+        Clear the cell widget by removing its value, enabling editing, and resetting the error state.
+        """
         self.clear()
         self.setReadOnly(False)
         self.is_error = False
