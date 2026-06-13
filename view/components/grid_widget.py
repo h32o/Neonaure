@@ -26,9 +26,9 @@ class GridWidget(QWidget):
         self.cells = {}
         self.create_grid()
 
-    def create_grid(self):
-        for line in range(self.max_lines):
-            for column in range(self.max_columns):
+    def create_grid(self,row = 8, col = 8):
+        for line in range(row):
+            for column in range(col):
                 cell = CellWidget(line, column)
                 cell.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
                 cell.textChanged.connect(self.on_cell_changed)

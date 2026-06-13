@@ -5,6 +5,7 @@ class SettingsWindow(QWidget):
     signal_load = pyqtSignal()
     signal_save = pyqtSignal()
     signal_reset = pyqtSignal()
+    signal_generate = pyqtSignal()
     signal_quit = pyqtSignal()
     signal_toggle_timer = pyqtSignal(bool)
     signal_pseudo_changed = pyqtSignal(str) 
@@ -53,6 +54,8 @@ class SettingsWindow(QWidget):
         self.btn_save.setShortcut("Ctrl+S")
         self.btn_reset = QPushButton("Reset Grid")
         self.btn_reset.setShortcut("Ctrl+R")
+        self.btn_generate = QPushButton("Generate Grid")
+        self.btn_generate.setShortcut("Ctrl+G")
         self.btn_quit = QPushButton("Quit Application")
         
         button_style = """
@@ -71,12 +74,14 @@ class SettingsWindow(QWidget):
         self.btn_load.setStyleSheet(button_style)
         self.btn_save.setStyleSheet(button_style)
         self.btn_reset.setStyleSheet(button_style)
+        self.btn_generate.setStyleSheet(button_style)
         self.btn_quit.setStyleSheet(button_style)
         
         layout_general.addWidget(QLabel("General Settings"))
         layout_general.addWidget(self.btn_load)
         layout_general.addWidget(self.btn_save)
         layout_general.addWidget(self.btn_reset)
+        layout_general.addWidget(self.btn_generate)
         layout_general.addWidget(self.btn_quit)
         layout_general.addStretch()
     
@@ -145,6 +150,7 @@ class SettingsWindow(QWidget):
         self.btn_load.clicked.connect(self.signal_load.emit)
         self.btn_save.clicked.connect(self.signal_save.emit)
         self.btn_reset.clicked.connect(self.signal_reset.emit)
+        self.btn_generate.clicked.connect(self.signal_generate.emit)
         self.btn_quit.clicked.connect(self.signal_quit.emit)
         self.checkbox_timer.toggled.connect(self.signal_toggle_timer.emit)
 
