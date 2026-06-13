@@ -1,11 +1,29 @@
+"""
+Module for the menu window.
+
+Provides  a clean interface for the user to start a new game or exit the application.
+"""
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QPushButton, QLabel
 from PyQt6.QtCore import Qt, pyqtSignal
 import sys
 
 
 class MenuWindow(QMainWindow):
+    """
+    Main menu window for the Néonaure application.
+
+    This window serves as the starting point for the user, offering the choice to start a new game or exit the application.
+
+    Signals:
+    signal_start_game (pyqtSignal): Emitted when the user clicks the start game button.
+    """
+
     signal_start_game = pyqtSignal()
+
     def __init__(self):
+        """
+        Initialise the menu window, creates buttons, and sets up the window aesthetic.
+        """
         super().__init__()
         self.setWindowTitle("Néonaure - Menu")
         self.setMinimumSize(800, 600)
@@ -57,6 +75,9 @@ class MenuWindow(QMainWindow):
         self._main_window = None
 
     def start_game(self):
+        """
+        Ask for start the game by emmiting a signal.
+        """
         self.signal_start_game.emit()
 
 

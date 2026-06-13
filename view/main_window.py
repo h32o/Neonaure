@@ -1,3 +1,9 @@
+"""
+Module defining the main window of the Néonaure application.
+
+Handles the display of the grid, the timer, the undo/redo buttons, the solve button, and the settings panel.
+
+"""
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QMessageBox, QPushButton, QHBoxLayout, QLabel
 from PyQt6.QtCore import pyqtSignal, QTimer, Qt,QPropertyAnimation
@@ -5,6 +11,22 @@ from .components.grid_widget import GridWidget
 from .settings_window import SettingsWindow
 
 class MainWindow(QMainWindow):
+    """
+    Main window of the Néonaure application.
+
+    This class build the user interface of the application.
+    And manages the opening and closing of the settings panel, updates the game timer, and forward user actions to the controller via PyQt Signals.
+
+    Signals:
+    signal_load_grid (pyqtSignal): Emitted when the user clicks the load button in the settings panel.
+    signal_save_grid (pyqtSignal): Emitted when the user clicks the save button in the settings panel.
+    signal_reset_grid (pyqtSignal): Emitted when the user clicks the reset button in the settings panel.
+    signal_solve_grid (pyqtSignal): Emitted when the user clicks the solve button in the settings panel.
+    signal_undo (pyqtSignal): Emitted when the user clicks the undo button 
+    signal_redo (pyqtSignal): Emitted when the user clicks the redo button 
+    signal_cell_changed (pyqtSignal [int, int, str]): Emitted when the user textualy changes a cell.
+
+    """
     signal_load_grid = pyqtSignal()
     signal_save_grid = pyqtSignal()
     signal_reset_grid = pyqtSignal()
@@ -14,6 +36,9 @@ class MainWindow(QMainWindow):
     signal_cell_changed = pyqtSignal(int, int, str)
 
     def __init__(self):
+        """
+        Initialise the main window, set up layouts,create widgets, and connect internal signals to controller.
+        """
         super().__init__()
         
         self.setWindowTitle("Néonaure")
@@ -74,7 +99,8 @@ class MainWindow(QMainWindow):
             font-weight: bold;
         }
         QPushButton:hover {
-            background-color: #C0392B;
+            b signal_toggle_timer (pyqtSignal):
+    signal_pseudo_changed (pyqtSignal):ackground-color: #C0392B;
             color: #E0E0FF;
             border: 1px solid #C0392B;
         }
@@ -205,6 +231,9 @@ class MainWindow(QMainWindow):
         self.timer_enabled = False
     
     def toggle_settings(self):
+        """
+        Trigger the sliding animation of the settings panel to open or close it.
+        """
         if self.settings_panel.maximumWidth() == 350:
             self.settings_panel.setMinimumWidth(0) 
             self.anim.setStartValue(350)
@@ -216,10 +245,16 @@ class MainWindow(QMainWindow):
         self.anim.start()
 
     def on_anim_finished(self):
+        """
+        Set the minimum width of the settings panel to 350 when the animation is finished.
+        """
         if self.settings_panel.maximumWidth() == 350:
             self.settings_panel.setMinimumWidth(350) 
            
     def update_timer_display(self):
+        """
+        Update the timer display every second and update the display if the timer is enabled.
+        """
         self.time_counter += 1
         if self.timer_enabled:
             minutes = self.time_counter // 60
@@ -227,6 +262,12 @@ class MainWindow(QMainWindow):
             self.timer_label.setText(f"{minutes}:{seconds:02d}")
 
     def toggle_timer(self, is_checked):
+        """
+        Toggle the timer display and counter updates.
+
+        Args:
+            is_checked (bool): True if the timer should be enabled, False otherwise.
+        """
         self.timer_enabled = is_checked
         self.timer_label.setVisible(is_checked)
         if is_checked:
@@ -237,45 +278,96 @@ class MainWindow(QMainWindow):
             self.timer_label.setText("")       
     
     def update_pseudo_label(self, pseudo):
+        """
+        Update the pseudo label.
+
+        Args:
+            pseudo (str): The pseudo of the current player to display.
+        """
         self.pseudo_label.setText(f"connected as {pseudo}")
 
     def show_victory(self):
+        """
+        Show the victory message.
+        """
         msg = QMessageBox(self)
         msg.setWindowTitle("Congratulations !")
         msg.setText("Nice bro, you did it!")
         msg.exec()
 
     def reset_grid(self):
+        """
+        Ask for reset grid by emitting a signal.
+        """
         print("Request to reset the grid.")
         self.signal_reset_grid.emit()
     
     def load_grid(self):
+        """
+        Ask for load grid by emitting a signal.
+        """
         print("Request to load a grid (Ctrl+L).")
         self.signal_load_grid.emit()
 
     def save_grid(self):
+        """
+        Ask for save the grid by emitting a signal.
+        """
         print("Request to save the grid (Ctrl+S).")
         self.signal_save_grid.emit()
 
     def solve_grid(self):
+        """
+        Ask for solve the grid by emitting a signal.
+        """
         print("Request to solve the grid.")
         self.signal_solve_grid.emit()
 
     def undo(self):
+        """
+        Ask for undo by emitting a signal.
+        """
         print("Request to undo.")
         self.signal_undo.emit()
 
     def redo(self):
+        """
+        Ask for redo by emitting a signal.
+        """
         print("Request to redo.")
         self.signal_redo.emit()
     
     def update_cell(self, row, col, value):
+        """
+        Update the text of a cell.
+        
+        Args:
+            row (int): The row index of the cell.
+            col (int): The column index of the cell.
+            value (int): The new value of the cell.
+        """
         self.grid_widget.cells[(row, col)].setText(str(value))
     
     def update_cell_error(self, row, col, is_error):
+        """
+        Update the color of a cell.
+        
+        Args:
+            row (int): The row index of the cell.
+            col (int): The column index of the cell.
+            is_error (bool): True if the cell should be in error, False otherwise.
+        """
         self.grid_widget.change_color_cell_error(row, col, is_error)
 
     def set_cell_readonly(self, row, col, value):
+        """
+        Set the value of a cell and make it read-only.
+        
+        Args:
+            row (int): The row index of the cell.
+            col (int): The column index of the cell.
+            value (int): The value of the cell.
+        """
         self.grid_widget.cells[(row, col)].set_value(value)
 
 if __name__ == "__main__":

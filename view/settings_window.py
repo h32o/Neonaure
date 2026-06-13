@@ -1,7 +1,29 @@
+"""
+Module of the settings window.
+
+This window allows the user to change the settings of the game like the display, rules and account.
+"""
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QListWidget, QStackedWidget, QPushButton, QCheckBox, QLabel, QLineEdit, QSpinBox
 from PyQt6.QtCore import pyqtSignal, Qt
 
 class SettingsWindow(QWidget):
+    """
+    Settings panel for the Néonaure application.
+
+    A sidebar widget allow the user to navigate through the different settings pages including :
+    - General settings
+    - Display settings
+    - Rules of the game
+    - Account settings
+
+    Signals:
+    signal_load_grid (pyqtSignal): Emitted when the user clicks the load button in the settings panel.
+    signal_save_grid (pyqtSignal): Emitted when the user clicks the save button in the settings panel.
+    signal_reset_grid (pyqtSignal): Emitted when the user clicks the reset button in the settings panel.
+    signal_quit_app (pyqtSignal): Emitted when the user clicks the quit button in the settings panel.
+    signal_toggle_timer (pyqtSignal): Emitted when the user clicks the toggle timer button in the settings panel.
+    signal_pseudo_changed (pyqtSignal): Emitted when the user changes the pseudo in the settings panel.
+    """
     signal_load = pyqtSignal()
     signal_save = pyqtSignal()
     signal_reset = pyqtSignal()
@@ -10,6 +32,9 @@ class SettingsWindow(QWidget):
     signal_pseudo_changed = pyqtSignal(str) 
     
     def __init__(self):
+        """
+        Initialize the settings window by creating the different settings pages and the sidebar widget.
+        """
         super().__init__()
         
         self.main_layout = QHBoxLayout(self)
@@ -149,6 +174,9 @@ class SettingsWindow(QWidget):
         self.checkbox_timer.toggled.connect(self.signal_toggle_timer.emit)
 
     def save_pseudo(self):
+        """
+        Saves the pseudo entered by the user by emitting a signal.
+        """
         pseudo = self.pseudo_input.text()
         if pseudo:
             self.signal_pseudo_changed.emit(pseudo)
