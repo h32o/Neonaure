@@ -30,7 +30,6 @@ class CellWidget(QLineEdit):
         self.setValidator(validator)
         self.setMaxLength(1)
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.setFixedSize(50, 50) 
 
         self.setStyleSheet("""
             background-color: white;
@@ -60,7 +59,7 @@ class CellWidget(QLineEdit):
             left_bold (bool): True to make the left border bold.
         """
         BOLD_BORDER = "1.5px solid black"
-        NORMAL_BORDER = "0.5px solid #C8C0C0"
+        NORMAL_BORDER = "0.5px solid #474747"
 
         if top_bold:
             self.bold_borders['top'] = BOLD_BORDER
@@ -90,7 +89,7 @@ class CellWidget(QLineEdit):
         Apply the style to the cell widget based on its state(read-only, error, or default).
         """
         if self.isReadOnly():
-            background_color = "#B6B6B6"
+            background_color = "#ADADAD"
         elif self.is_error:
             background_color = "#FFCCCC" 
         else:

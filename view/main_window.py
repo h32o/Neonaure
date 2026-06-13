@@ -5,12 +5,14 @@ Handles the display of the grid, the timer, the undo/redo buttons, the solve but
 
 """
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QMessageBox, QPushButton, QHBoxLayout, QLabel
-from PyQt6.QtCore import pyqtSignal, QTimer, Qt,QPropertyAnimation
+import os
+from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QMessageBox, QPushButton, QHBoxLayout, QLabel,QDialog,QFormLayout,QDialogButtonBox,QDoubleSpinBox,QSpinBox,QFileDialog
+from PyQt6.QtCore import pyqtSignal, QTimer, Qt, QPropertyAnimation
+from PyQt6.QtGui import QKeySequence,QPixmap
 from .components.grid_widget import GridWidget
 from .settings_window import SettingsWindow
 
-class MainWindow(QMainWindow):
+class MainWindow(QWidget):
     """
     Main window of the Néonaure application.
 
@@ -18,8 +20,8 @@ class MainWindow(QMainWindow):
     And manages the opening and closing of the settings panel, updates the game timer, and forward user actions to the controller via PyQt Signals.
 
     Signals:
-    signal_load_grid (pyqtSignal): Emitted when the user clicks the load button in the settings panel.
-    signal_save_grid (pyqtSignal): Emitted when the user clicks the save button in the settings panel.
+    signal_load_grid (pyqtSignal [str]): Emitted when the user clicks the load button in the settings panel.
+    signal_save_grid (pyqtSignal [str]): Emitted when the user clicks the save button in the settings panel.
     signal_reset_grid (pyqtSignal): Emitted when the user clicks the reset button in the settings panel.
     signal_solve_grid (pyqtSignal): Emitted when the user clicks the solve button in the settings panel.
     signal_undo (pyqtSignal): Emitted when the user clicks the undo button 
@@ -27,35 +29,37 @@ class MainWindow(QMainWindow):
     signal_cell_changed (pyqtSignal [int, int, str]): Emitted when the user textualy changes a cell.
 
     """
-    signal_load_grid = pyqtSignal()
-    signal_save_grid = pyqtSignal()
+    signal_load_grid = pyqtSignal(str)
+    signal_save_grid = pyqtSignal(str)
     signal_reset_grid = pyqtSignal()
     signal_solve_grid = pyqtSignal()
     signal_undo = pyqtSignal()
     signal_redo = pyqtSignal()
     signal_cell_changed = pyqtSignal(int, int, str)
+    signal_back_to_menu = pyqtSignal()
+    signal_hint = pyqtSignal()
+    signal_background_change = pyqtSignal(str)
+    signal_generate_grid = pyqtSignal(int, int, float)
 
-    def __init__(self):
+
+    def __init__(self, parent=None):
         """
         Initialise the main window, set up layouts,create widgets, and connect internal signals to controller.
         """
-        super().__init__()
+        super().__init__(parent)
         
-        self.setWindowTitle("Néonaure")
-        self.setMinimumSize(800, 600) 
-        widget_central = QWidget()
-        self.setCentralWidget(widget_central)
-        widget_central.setStyleSheet("""
+        self.setStyleSheet("""
             QWidget {
                 background-color: #12121A;
             }
         """)
         
-        main_vertical_layout = QVBoxLayout(widget_central)
+        main_vertical_layout = QVBoxLayout(self)
         main_vertical_layout.setContentsMargins(10, 10, 10, 10)
         main_vertical_layout.setSpacing(0)
-        
+   
         self.top_layout = QHBoxLayout()
+        
         self.settings_button = QPushButton("☰")
         self.settings_button.setFixedSize(40, 40)
         self.settings_button.setStyleSheet("""
@@ -110,6 +114,7 @@ class MainWindow(QMainWindow):
 
         main_vertical_layout.addLayout(self.top_layout, 0)
         
+       
         self.root_layout = QHBoxLayout()
         self.root_layout.setContentsMargins(0, 10, 0, 0)
         self.root_layout.setSpacing(0) 
@@ -125,7 +130,8 @@ class MainWindow(QMainWindow):
         self.settings_panel.signal_load.connect(self.load_grid)
         self.settings_panel.signal_save.connect(self.save_grid)
         self.settings_panel.signal_reset.connect(self.reset_grid)
-        self.settings_panel.signal_quit.connect(QApplication.instance().quit)
+        self.settings_panel.signal_generate.connect(self.generate_grid)
+        self.settings_panel.signal_quit.connect(self.signal_back_to_menu.emit)
         self.settings_panel.signal_toggle_timer.connect(self.toggle_timer)
         self.settings_panel.signal_pseudo_changed.connect(self.update_pseudo_label)
         
@@ -137,12 +143,12 @@ class MainWindow(QMainWindow):
         
         self.root_layout.addWidget(self.game_widget, 1) 
         
-        self.game_layout.addStretch(1)
+        self.game_layout.addStretch(0)
 
         self.grid_widget = GridWidget()
         self.grid_widget.signal_cell_changed.connect(self.signal_cell_changed)
-        self.game_layout.addWidget(self.grid_widget, 0)
-        self.grid_widget.create_grid()
+        self.game_layout.addWidget(self.grid_widget, 1)
+       
         
         self.timer_label = QLabel("")
         self.timer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -161,13 +167,18 @@ class MainWindow(QMainWindow):
         self.game_layout.addWidget(self.timer_label, 0, Qt.AlignmentFlag.AlignHCenter)
         self.timer_label.setVisible(False)
 
-        self.game_layout.addStretch(1)
+        self.game_layout.addStretch(0)
 
         self.time_counter = 0
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_timer_display)
         self.timer.start(1000)
         
+        self.hint_timer = QTimer(self)
+        self.hint_cooldown = 0
+        self.hint_timer.timeout.connect(self.update_hint_cooldown)
+        
+        # ── Bottom bar ──
         nav_button_style = """
         QPushButton {
             background-color: #2A2A35;
@@ -203,6 +214,17 @@ class MainWindow(QMainWindow):
 
         self.bottom_layout.addStretch()
 
+        self.hint_button = QPushButton("💡")
+        self.hint_button.setShortcut(QKeySequence("Ctrl+H"))
+        self.hint_button.setFixedSize(145, 45)
+        self.hint_button.setStyleSheet("""
+            background-color: gold;
+            color: white;
+            border-radius: 10px;
+        """)
+        self.hint_button.clicked.connect(self.give_hint)
+        self.bottom_layout.addWidget(self.hint_button)
+        
         self.solve_button = QPushButton("Solve  ✓")
         self.solve_button.setFixedSize(140, 45)
         self.solve_button.setToolTip("Solve the grid")
@@ -276,7 +298,31 @@ class MainWindow(QMainWindow):
             self.timer_label.setText(f"{minutes}:{seconds:02d}")
         else:
             self.timer_label.setText("")       
-    
+    def start_hint_cooldown(self, seconds=60):
+        self.hint_cooldown = seconds
+        self.hint_button.setEnabled(False)
+        self.hint_button.setText(str(seconds))
+        self.hint_button.setStyleSheet("""
+            background-color: grey;
+            color: white;
+            border-radius: 10px;
+        """)
+        self.hint_timer.start(1000)
+
+    def update_hint_cooldown(self):
+        self.hint_cooldown -= 1
+        if self.hint_cooldown <= 0:
+            self.hint_timer.stop()
+            self.hint_button.setEnabled(True)
+            self.hint_button.setText("💡")
+            self.hint_button.setStyleSheet("""
+                background-color: gold;
+                color: white;
+                border-radius: 10px;
+            """)
+        else:
+            self.hint_button.setText(str(self.hint_cooldown))
+            
     def update_pseudo_label(self, pseudo):
         """
         Update the pseudo label.
@@ -306,15 +352,55 @@ class MainWindow(QMainWindow):
         """
         Ask for load grid by emitting a signal.
         """
+        path, _ = QFileDialog.getOpenFileName(self, "Choose grid", "", "")
+        if path:
+            self.signal_load_grid.emit(path)
         print("Request to load a grid (Ctrl+L).")
-        self.signal_load_grid.emit()
 
     def save_grid(self):
         """
         Ask for save the grid by emitting a signal.
         """
+        path, _ = QFileDialog.getSaveFileName(self, "Choose image", "", ".json")
+        if path:
+            self.signal_save_grid.emit(path)
         print("Request to save the grid (Ctrl+S).")
-        self.signal_save_grid.emit()
+
+    def generate_grid(self, checked=False):
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Générer une grille")
+
+        form = QFormLayout(dialog)
+
+        spin_row = QSpinBox()
+        spin_row.setRange(4, 12)
+        spin_row.setValue(8)
+        form.addRow("Lignes :", spin_row)
+
+        spin_col = QSpinBox()
+        spin_col.setRange(4, 12)
+        spin_col.setValue(8)
+        form.addRow("Colonnes :", spin_col)
+
+        spin_pct = QDoubleSpinBox()
+        spin_pct.setRange(0, 100)
+        spin_pct.setSingleStep(5)
+        spin_pct.setValue(35)
+        form.addRow("% cases données :", spin_pct)
+
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok
+            | QDialogButtonBox.StandardButton.Cancel
+        )
+        buttons.accepted.connect(dialog.accept)
+        buttons.rejected.connect(dialog.reject)
+        form.addRow(buttons)
+
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            row = spin_row.value()
+            col = spin_col.value()
+            pct = spin_pct.value() / 100
+            self.signal_generate_grid.emit(row, col, pct)
 
     def solve_grid(self):
         """
@@ -329,6 +415,20 @@ class MainWindow(QMainWindow):
         """
         print("Request to undo.")
         self.signal_undo.emit()
+
+    def give_hint(self):
+        print("Request to give a hint")
+        self.signal_hint.emit()
+
+    def clear_grid(self):
+        for cell in self.grid_widget.cells.values():
+            self.grid_widget.grid_layout.removeWidget(cell)
+            cell.deleteLater()
+        self.grid_widget.cells.clear()
+
+    def rebuild_grid(self, rows, cols):
+        self.clear_grid()
+        self.grid_widget.create_grid(rows, cols)
 
     def redo(self):
         """
@@ -346,8 +446,11 @@ class MainWindow(QMainWindow):
             col (int): The column index of the cell.
             value (int): The new value of the cell.
         """
-        self.grid_widget.cells[(row, col)].setText(str(value))
-    
+        cell = self.grid_widget.cells[(row, col)]
+        cell.blockSignals(True)
+        cell.setText("" if value == 0 else str(value))
+        cell.blockSignals(False)
+
     def update_cell_error(self, row, col, is_error):
         """
         Update the color of a cell.
@@ -368,7 +471,38 @@ class MainWindow(QMainWindow):
             col (int): The column index of the cell.
             value (int): The value of the cell.
         """
-        self.grid_widget.cells[(row, col)].set_value(value)
+        cell = self.grid_widget.cells[(row, col)]
+        cell.blockSignals(True)
+        cell.set_value(value)
+        cell.setReadOnly(True)
+        cell.blockSignals(False)
+
+    def change_background(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self, "Choose image", "",
+            "Images (*.png *.jpg *.jpeg *.bmp *.webp)"
+        )
+        if path:
+            self.signal_background_change.emit(path)
+        print("Request to change background-image")
+
+    def set_background(self, path):
+        if os.path.exists(path):
+            pixmap = QPixmap(path)
+            if not pixmap.isNull():
+                small = pixmap.scaled(
+                    pixmap.width() // 40,
+                    pixmap.height() // 40,
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation
+                )
+                blurred = small.scaled(
+                    pixmap.width(),
+                    pixmap.height(),
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation
+                )
+                self.grid_container.set_bg_pixmap(blurred)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

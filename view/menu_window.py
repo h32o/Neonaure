@@ -3,12 +3,11 @@ Module for the menu window.
 
 Provides  a clean interface for the user to start a new game or exit the application.
 """
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QPushButton, QLabel
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QApplication
 from PyQt6.QtCore import Qt, pyqtSignal
 import sys
 
-
-class MenuWindow(QMainWindow):
+class MenuWindow(QWidget):    
     """
     Main menu window for the Néonaure application.
 
@@ -16,21 +15,15 @@ class MenuWindow(QMainWindow):
 
     Signals:
     signal_start_game (pyqtSignal): Emitted when the user clicks the start game button.
-    """
-
+    """                      
     signal_start_game = pyqtSignal()
-
-    def __init__(self):
+    def __init__(self, parent=None):    
         """
-        Initialise the menu window, creates buttons, and sets up the window aesthetic.
-        """
-        super().__init__()
-        self.setWindowTitle("Néonaure - Menu")
-        self.setMinimumSize(800, 600)
+        Initialize the menu window and set up the layout and buttons.
+        """            
+        super().__init__(parent)                    
 
-        central = QWidget()
-        self.setCentralWidget(central)
-        central.setStyleSheet("""
+        self.setStyleSheet("""                    
             QWidget {
                 background-color: #12121A;
             }
@@ -47,7 +40,7 @@ class MenuWindow(QMainWindow):
             }
         """)
 
-        main_layout = QVBoxLayout(central)
+        main_layout = QVBoxLayout(self)
         main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         play_button = QPushButton("Play")
@@ -69,10 +62,8 @@ class MenuWindow(QMainWindow):
 
         quit_button = QPushButton("Quit")
         quit_button.setFixedSize(200, 50)
-        quit_button.clicked.connect(self.close)
+        quit_button.clicked.connect(self.start_quit)
         main_layout.addWidget(quit_button)
-
-        self._main_window = None
 
     def start_game(self):
         """
@@ -80,9 +71,8 @@ class MenuWindow(QMainWindow):
         """
         self.signal_start_game.emit()
 
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = MenuWindow()
-    window.show()
-    sys.exit(app.exec())
+    def start_quit(self):
+        """
+        Ask for quitting the application by emitting a signal.
+        """
+        QApplication.instance().quit()
