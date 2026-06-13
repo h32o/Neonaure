@@ -28,7 +28,6 @@ class Controller:
 
         self._app_window.showFullScreen()
 
-        # Start on menu
         self._app_window.stack.setCurrentIndex(0)
         self._handle_main_menu()
         
@@ -85,11 +84,8 @@ class Controller:
         self._init_view_from_model()
     
     def handle_generate(self, row : int = 5, col: int = 5, pourcentage_given: float = 0.35):
-        print(f"[DEBUG] handle_generate appelé : row={row}, col={col}, pct={pourcentage_given}")
         nb_pattern = (row * col) // 3
-        print(f"[DEBUG] Lancement génération...")
         new_grid = generation(row, col, nb_pattern, pourcentage_given)
-        print(f"[DEBUG] Résultat génération : {new_grid}")
         if new_grid is None:
             print("Generation failed : ... retry")
             return
@@ -187,9 +183,7 @@ class Controller:
                 if cell.get_given():
                     self._game_page.set_cell_readonly(r, c, val)
                 elif val != 0:
-                    # Show user-filled value
                     self._game_page.update_cell(r, c, val)
-                # borders
                 borders = self._model.get_pattern_border(r, c)
                 self._game_page.grid_widget.set_cell_borders(r, c, 
                     borders["top"], borders["right"], 

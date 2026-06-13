@@ -25,7 +25,7 @@ class GridWidget(QWidget):
         self.cells = {}
         self.create_grid()
 
-    def create_grid(self, row=8, col=8):  # ← col=8 au lieu de col=0
+    def create_grid(self, row=8, col=8):
         for line in range(row):
             for column in range(col):
                 cell = CellWidget(line, column)
@@ -35,9 +35,7 @@ class GridWidget(QWidget):
                 cell.textChanged.connect(self.on_cell_changed)
                 self.grid_layout.addWidget(cell, line, column)
                 self.cells[(line, column)] = cell
-            
-                
-
+    
     def resizeEvent(self, event):
         super().resizeEvent(event)
         
