@@ -8,7 +8,20 @@ Le **Néonaure** est inspiré du Sudoku joué généralement sur une grille 8x8 
 - Un chiffre doit être entouré de chiffres différents (y compris en diagonale)
 - Un motif de N cases (repéré en traits gras) doit comporter tous les chiffres de 1 à N
 
+## Dépendances
+
+### PC: 
+```
+qasync, PyQt6 
+```
+
+### Android: 
+```
+qasync, PySide6 
+```
+
 ## Architecture — MVC
+
 
 **Architecture approximative**
 
