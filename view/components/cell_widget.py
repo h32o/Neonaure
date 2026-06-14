@@ -59,7 +59,7 @@ class CellWidget(QLineEdit):
             left_bold (bool): True to make the left border bold.
         """
         BOLD_BORDER = "1.5px solid black"
-        NORMAL_BORDER = "0.5px solid #474747"
+        NORMAL_BORDER = "0.5px solid #DBCCCC"
 
         if top_bold:
             self.bold_borders['top'] = BOLD_BORDER
