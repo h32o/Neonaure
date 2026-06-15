@@ -21,6 +21,7 @@ class SettingsWindow(QWidget):
     signal_save_grid (pyqtSignal): Emitted when the user clicks the save button in the settings panel.
     signal_reset_grid (pyqtSignal): Emitted when the user clicks the reset button in the settings panel.
     signal_quit_app (pyqtSignal): Emitted when the user clicks the quit button in the settings panel.
+    signal_change_theme (pyqtSignal): Emitted when the user clicks the Theme button in the settings panel.
     signal_toggle_timer (pyqtSignal): Emitted when the user clicks the toggle timer button in the settings panel.
     signal_pseudo_changed (pyqtSignal): Emitted when the user changes the pseudo in the settings panel.
     """
@@ -29,6 +30,7 @@ class SettingsWindow(QWidget):
     signal_reset = pyqtSignal()
     signal_generate = pyqtSignal()
     signal_quit = pyqtSignal()
+    signal_change_theme = pyqtSignal(str)
     signal_toggle_timer = pyqtSignal(bool)
     signal_pseudo_changed = pyqtSignal(str) 
     
@@ -120,6 +122,13 @@ class SettingsWindow(QWidget):
         self.checkbox_timer.setChecked(False)
         layout_display.addWidget(self.checkbox_timer)
         
+        self.btn_theme = QPushButton("Light Theme")
+        self.btn_theme.setShortcut("Ctrl+T")
+        self.btn_theme.clicked.connect(self.change_theme)
+        layout_display.addWidget(self.btn_theme)
+        
+        self.btn_theme.setStyleSheet(button_style)
+        
         layout_display.addStretch()
 
         self.page_rules = QWidget()
@@ -186,3 +195,15 @@ class SettingsWindow(QWidget):
         pseudo = self.pseudo_input.text()
         if pseudo:
             self.signal_pseudo_changed.emit(pseudo)
+    
+    def change_theme(self):
+        """
+        Change the current Theme into Dark or Light by emitting a signal with the right color
+        """
+        if self.btn_theme.text() == "Dark Theme":
+            self.btn_theme.setText("Dark Theme")
+            self.signal_change_theme.emit("#12121A")
+            
+        else:
+            self.btn_theme.setText("Light Theme")
+            self.signal_change_theme.emit("#EBEBEB")

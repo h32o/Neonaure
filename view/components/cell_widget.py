@@ -103,6 +103,7 @@ class CellWidget(QLineEdit):
             border-bottom: {self.bold_borders['bottom']};
             border-left: {self.bold_borders['left']};
             color: black;
+            font-size: 22px;
             font-weight: bold;
             margin: -0.25px; 
         """)

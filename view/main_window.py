@@ -8,7 +8,7 @@ import sys
 import os
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QMessageBox, QPushButton, QHBoxLayout, QLabel,QDialog,QFormLayout,QDialogButtonBox,QDoubleSpinBox,QSpinBox,QFileDialog
 from PyQt6.QtCore import pyqtSignal, QTimer, Qt, QPropertyAnimation
-from PyQt6.QtGui import QKeySequence,QPixmap
+from PyQt6.QtGui import QKeySequence,QPixmap,QPainter,QColor
 from .components.grid_widget import GridWidget
 from .settings_window import SettingsWindow
 
@@ -38,7 +38,6 @@ class MainWindow(QWidget):
     signal_cell_changed = pyqtSignal(int, int, str)
     signal_back_to_menu = pyqtSignal()
     signal_hint = pyqtSignal()
-    signal_background_change = pyqtSignal(str)
     signal_generate_grid = pyqtSignal(int, int, float)
 
 
@@ -58,17 +57,24 @@ class MainWindow(QWidget):
         main_vertical_layout.setContentsMargins(10, 10, 10, 10)
         main_vertical_layout.setSpacing(0)
    
-        self.top_layout = QHBoxLayout()
+        self.container = QWidget()
+        main_vertical_layout.setContentsMargins(0, 0, 0, 0)
+        main_vertical_layout.setSpacing(0)
+        
+        self.top_layout = QHBoxLayout(self.container)
+        self.top_layout.setContentsMargins(0, 0, 0, 0)
+        self.top_layout.setSpacing(0)
+        self.top_layout.setObjectName("top-layout")
         
         self.settings_button = QPushButton("☰")
-        self.settings_button.setFixedSize(40, 40)
+        self.settings_button.setFixedSize(80, 80)
         self.settings_button.setStyleSheet("""
         QPushButton {
             background-color: #2A2A35; 
             color: #E0E0FF; 
             border-radius: 5px; 
             border: 1px solid #383A59;
-            font-size: 25px;
+            font-size: 50px;
         }
         QPushButton:hover {
             background-color: #383A59;
@@ -82,7 +88,7 @@ class MainWindow(QWidget):
         self.pseudo_label.setStyleSheet("""
             QLabel {
                 color: #8888AA; 
-                font-size: 12px; 
+                font-size: 24px; 
                 background-color: transparent;
             }
         """)
@@ -91,7 +97,7 @@ class MainWindow(QWidget):
         self.top_layout.addStretch()
 
         self.quit_button = QPushButton("✕")
-        self.quit_button.setFixedSize(40, 40)
+        self.quit_button.setFixedSize(80, 80)
         self.quit_button.setToolTip("Quit application")
         self.quit_button.setStyleSheet("""
         QPushButton {
@@ -99,7 +105,7 @@ class MainWindow(QWidget):
             color: white;
             border-radius: 5px;
             border: 1px solid #383A59;
-            font-size: 18px;
+            font-size: 36px;
             font-weight: bold;
         }
         QPushButton:hover {
@@ -112,7 +118,7 @@ class MainWindow(QWidget):
         self.quit_button.clicked.connect(QApplication.instance().quit)
         self.top_layout.addWidget(self.quit_button)
 
-        main_vertical_layout.addLayout(self.top_layout, 0)
+        main_vertical_layout.addWidget(self.container, 0)
         
        
         self.root_layout = QHBoxLayout()
@@ -134,6 +140,7 @@ class MainWindow(QWidget):
         self.settings_panel.signal_quit.connect(self.signal_back_to_menu.emit)
         self.settings_panel.signal_toggle_timer.connect(self.toggle_timer)
         self.settings_panel.signal_pseudo_changed.connect(self.update_pseudo_label)
+        self.settings_panel.signal_change_theme.connect(self.Theme_changed)
         
         self.root_layout.addWidget(self.settings_panel)
 
@@ -198,7 +205,7 @@ class MainWindow(QWidget):
 
         self.undo_button = QPushButton("↶  Undo")
         self.undo_button.setShortcut("Ctrl+Z")
-        self.undo_button.setFixedSize(110, 40)
+        self.undo_button.setFixedSize(110, 80)
         self.undo_button.setToolTip("Undo (Ctrl+Z)")
         self.undo_button.setStyleSheet(nav_button_style)
         self.undo_button.clicked.connect(self.undo)
@@ -206,7 +213,7 @@ class MainWindow(QWidget):
 
         self.redo_button = QPushButton("↷  Redo")
         self.redo_button.setShortcut("Ctrl+Y")
-        self.redo_button.setFixedSize(110, 40)
+        self.redo_button.setFixedSize(110, 80)
         self.redo_button.setToolTip("Redo (Ctrl+Y)")
         self.redo_button.setStyleSheet(nav_button_style)
         self.redo_button.clicked.connect(self.redo)
@@ -214,19 +221,20 @@ class MainWindow(QWidget):
 
         self.bottom_layout.addStretch()
 
-        self.hint_button = QPushButton("💡")
+        self.hint_button = QPushButton("?")
         self.hint_button.setShortcut(QKeySequence("Ctrl+H"))
-        self.hint_button.setFixedSize(145, 45)
+        self.hint_button.setFixedSize(110, 80)
         self.hint_button.setStyleSheet("""
-            background-color: gold;
+            background-color: #99cfe0;
             color: white;
+            font-size: 35px;
             border-radius: 10px;
         """)
         self.hint_button.clicked.connect(self.give_hint)
         self.bottom_layout.addWidget(self.hint_button)
         
         self.solve_button = QPushButton("Solve  ✓")
-        self.solve_button.setFixedSize(140, 45)
+        self.solve_button.setFixedSize(110, 80)
         self.solve_button.setToolTip("Solve the grid")
         self.solve_button.setStyleSheet("""
         QPushButton {
@@ -352,7 +360,7 @@ class MainWindow(QWidget):
         """
         Ask for load grid by emitting a signal.
         """
-        path, _ = QFileDialog.getOpenFileName(self, "Choose grid", "", "")
+        path, _ = QFileDialog.getOpenFileName(self, "Choose grid", "", ".json")
         if path:
             self.signal_load_grid.emit(path)
         print("Request to load a grid (Ctrl+L).")
@@ -476,33 +484,18 @@ class MainWindow(QWidget):
         cell.set_value(value)
         cell.setReadOnly(True)
         cell.blockSignals(False)
-
-    def change_background(self):
-        path, _ = QFileDialog.getOpenFileName(
-            self, "Choose image", "",
-            "Images (*.png *.jpg *.jpeg *.bmp *.webp)"
-        )
-        if path:
-            self.signal_background_change.emit(path)
-        print("Request to change background-image")
-
-    def set_background(self, path):
-        if os.path.exists(path):
-            pixmap = QPixmap(path)
-            if not pixmap.isNull():
-                small = pixmap.scaled(
-                    pixmap.width() // 40,
-                    pixmap.height() // 40,
-                    Qt.AspectRatioMode.KeepAspectRatio,
-                    Qt.TransformationMode.SmoothTransformation
-                )
-                blurred = small.scaled(
-                    pixmap.width(),
-                    pixmap.height(),
-                    Qt.AspectRatioMode.KeepAspectRatio,
-                    Qt.TransformationMode.SmoothTransformation
-                )
-                self.grid_container.set_bg_pixmap(blurred)
+    
+    def Theme_changed(self, Theme):
+        self.setStyleSheet(f"""
+            QWidget {{
+                background-color: {Theme};
+            }}
+        """)
+        self.setAutoFillBackground(True)
+        palette = self.palette()
+        palette.setColor(self.backgroundRole(), QColor(Theme))
+        self.setPalette(palette)
+        
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

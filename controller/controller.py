@@ -36,7 +36,6 @@ class Controller:
         self._game_page.signal_load_grid.connect(self.handle_load)
         self._game_page.signal_solve_grid.connect(self.handle_solve)
         self._game_page.signal_cell_changed.connect(self.update_cell_value)
-        self._game_page.signal_background_change.connect(self.on_change_background)
         self._game_page.signal_hint.connect(self.give_hint)
         self._game_page.signal_generate_grid.connect(self.handle_generate)
         self._app_window.stack.setCurrentIndex(1)
@@ -176,9 +175,6 @@ class Controller:
                 self._game_page.grid_widget.set_cell_borders(r, c, 
                     borders["top"], borders["right"], 
                     borders["bottom"], borders["left"])
-
-    def on_change_background(self,path : str):
-        self._game_page.set_background(path)
         
     def _load_game(self) : 
         self._model.from_json("examples/grille2.json")

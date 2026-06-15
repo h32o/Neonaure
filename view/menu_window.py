@@ -4,7 +4,8 @@ Module for the menu window.
 Provides  a clean interface for the user to start a new game or exit the application.
 """
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QApplication
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import Qt, pyqtSignal,QSize
+from PyQt6.QtGui import QPixmap
 import sys
 
 class MenuWindow(QWidget):    
@@ -43,6 +44,10 @@ class MenuWindow(QWidget):
         main_layout = QVBoxLayout(self)
         main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
+        logo = QLabel()
+        pixmap = QPixmap("assets/img/logo-neonaur.png").scaled(QSize(200,200), Qt.AspectRatioMode.KeepAspectRatio)
+        logo.setPixmap(pixmap)
+        main_layout.addWidget(logo)
         play_button = QPushButton("Play")
         play_button.setFixedSize(200, 50)
         play_button.setStyleSheet("""
