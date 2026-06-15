@@ -203,9 +203,11 @@ class SettingsWindow(QWidget):
         Change the current Theme into Dark or Light by emitting a signal with the right color
         """
         if self.btn_theme.text() == "Dark Theme":
-            self.btn_theme.setText("Dark Theme")
+            self.btn_theme.setText("Light Theme")
             self.signal_change_theme.emit("#12121A")
             
+            
         else:
-            self.btn_theme.setText("Light Theme")
             self.signal_change_theme.emit("#EBEBEB")
+            self.btn_theme.setText("Dark Theme")
+            

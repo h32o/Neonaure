@@ -8,11 +8,12 @@ from pathlib import Path; import sys; ROOT = next(d for d in [Path(__file__).res
 
 import sys
 import os
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QMessageBox, QPushButton, QHBoxLayout, QLabel,QDialog,QFormLayout,QDialogButtonBox,QDoubleSpinBox,QSpinBox,QFileDialog
+from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QMessageBox, QPushButton, QHBoxLayout, QLabel,QDialog,QFormLayout,QDialogButtonBox,QDoubleSpinBox,QSpinBox,QFileDialog, QGraphicsOpacityEffect
 from PyQt6.QtCore import pyqtSignal, QTimer, Qt, QPropertyAnimation
 from PyQt6.QtGui import QKeySequence,QPixmap,QPainter,QColor
 from .components.grid_widget import GridWidget
 from .components.number_palette import NumberPalette
+from .components.loading_overlay import LoadingOverlay
 from .settings_window import SettingsWindow
 
 class MainWindow(QWidget):
@@ -112,8 +113,7 @@ class MainWindow(QWidget):
             font-weight: bold;
         }
         QPushButton:hover {
-            b signal_toggle_timer (pyqtSignal):
-    signal_pseudo_changed (pyqtSignal):ackground-color: #C0392B;
+            background-color: #C0392B;
             color: #E0E0FF;
             border: 1px solid #C0392B;
         }
@@ -267,6 +267,8 @@ class MainWindow(QWidget):
         self.game_layout.addLayout(self.bottom_layout, 0)
         
         self.timer_enabled = False
+
+        self._loading_overlay = LoadingOverlay(self)
     
     def toggle_settings(self):
         """
@@ -354,14 +356,13 @@ class MainWindow(QWidget):
         """
         msg = QMessageBox(self)
         msg.setWindowTitle("Congratulations !")
-        msg.setText("Nice bro, you did it!")
+        msg.setText("Congratulations! You solved the grid!")
         msg.exec()
 
     def reset_grid(self):
         """
         Ask for reset grid by emitting a signal.
         """
-        print("Request to reset the grid.")
         self.signal_reset_grid.emit()
     
     def load_grid(self):
@@ -371,7 +372,6 @@ class MainWindow(QWidget):
         path, _ = QFileDialog.getOpenFileName(self, "Choose grid", "", ".json")
         if path:
             self.signal_load_grid.emit(path)
-        print("Request to load a grid (Ctrl+L).")
 
     def save_grid(self):
         """
@@ -380,7 +380,6 @@ class MainWindow(QWidget):
         path, _ = QFileDialog.getSaveFileName(self, "Choose image", "", ".json")
         if path:
             self.signal_save_grid.emit(path)
-        print("Request to save the grid (Ctrl+S).")
 
     def generate_grid(self, checked=False):
         dialog = QDialog(self)
@@ -391,18 +390,18 @@ class MainWindow(QWidget):
         spin_row = QSpinBox()
         spin_row.setRange(4, 12)
         spin_row.setValue(8)
-        form.addRow("Lignes :", spin_row)
+        form.addRow("Row :", spin_row)
 
         spin_col = QSpinBox()
         spin_col.setRange(4, 12)
         spin_col.setValue(8)
-        form.addRow("Colonnes :", spin_col)
+        form.addRow("Column :", spin_col)
 
         spin_pct = QDoubleSpinBox()
         spin_pct.setRange(0, 100)
         spin_pct.setSingleStep(5)
         spin_pct.setValue(35)
-        form.addRow("% cases données :", spin_pct)
+        form.addRow("% given cells :", spin_pct)
 
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok
@@ -422,18 +421,15 @@ class MainWindow(QWidget):
         """
         Ask for solve the grid by emitting a signal.
         """
-        print("Request to solve the grid.")
         self.signal_solve_grid.emit()
 
     def undo(self):
         """
         Ask for undo by emitting a signal.
         """
-        print("Request to undo.")
         self.signal_undo.emit()
 
     def give_hint(self):
-        print("Request to give a hint")
         self.signal_hint.emit()
 
     def clear_grid(self):
@@ -450,7 +446,6 @@ class MainWindow(QWidget):
         """
         Ask for redo by emitting a signal.
         """
-        print("Request to redo.")
         self.signal_redo.emit()
     
     def update_cell(self, row, col, value):
@@ -503,6 +498,18 @@ class MainWindow(QWidget):
         palette = self.palette()
         palette.setColor(self.backgroundRole(), QColor(Theme))
         self.setPalette(palette)
+
+    def show_loading(self, message: str = "Loading\u2026"):
+        """Show a semi-transparent overlay with *message*."""
+        self._loading_overlay.show_with_message(message)
+
+    def hide_loading(self):
+        """Hide the loading overlay."""
+        self._loading_overlay.hide_overlay()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._loading_overlay.setGeometry(self.rect())
         
 
 if __name__ == "__main__":

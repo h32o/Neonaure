@@ -21,6 +21,8 @@ class Solver():
                     d = len(self.get_domain(r, c))
                     if d < best_len:
                         best, best_len = (r, c), d
+                        if d == 0:
+                            return best
         return best
 
     def solve(self) -> bool:
@@ -30,13 +32,23 @@ class Solver():
         if cell is None:
             return False
         r, c = cell
+        pid = self.g.pattern_ids[r, c]
         for v in self.get_domain(r, c):
             self.g.values[r, c] = v
-            if self.solve():
+            dead_end = False
+            for nr, nc in self.g.get_neighbors(r, c):
+                if self.g.values[nr, nc] == 0 and not self.get_domain(nr, nc):
+                    dead_end = True
+                    break
+            if not dead_end:
+                for pr, pc in self.g.pattern_cells(pid):
+                    if self.g.values[pr, pc] == 0 and not self.get_domain(pr, pc):
+                        dead_end = True
+                        break
+            if not dead_end and self.solve():
                 return True
             self.g.values[r, c] = 0
         return False
-
 
 if __name__ == "__main__":
     
