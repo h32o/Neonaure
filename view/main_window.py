@@ -6,11 +6,12 @@ Handles the display of the grid, the timer, the undo/redo buttons, the solve but
 """
 import sys
 import os
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QMessageBox, QPushButton, QHBoxLayout, QLabel,QDialog,QFormLayout,QDialogButtonBox,QDoubleSpinBox,QSpinBox,QFileDialog
+from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QMessageBox, QPushButton, QHBoxLayout, QLabel,QDialog,QFormLayout,QDialogButtonBox,QDoubleSpinBox,QSpinBox,QFileDialog, QGraphicsOpacityEffect
 from PyQt6.QtCore import pyqtSignal, QTimer, Qt, QPropertyAnimation
 from PyQt6.QtGui import QKeySequence,QPixmap,QPainter,QColor
 from .components.grid_widget import GridWidget
 from .components.number_palette import NumberPalette
+from .components.loading_overlay import LoadingOverlay
 from .settings_window import SettingsWindow
 
 class MainWindow(QWidget):
@@ -265,6 +266,8 @@ class MainWindow(QWidget):
         self.game_layout.addLayout(self.bottom_layout, 0)
         
         self.timer_enabled = False
+
+        self._loading_overlay = LoadingOverlay(self)
     
     def toggle_settings(self):
         """
@@ -501,6 +504,18 @@ class MainWindow(QWidget):
         palette = self.palette()
         palette.setColor(self.backgroundRole(), QColor(Theme))
         self.setPalette(palette)
+
+    def show_loading(self, message: str = "Loading\u2026"):
+        """Show a semi-transparent overlay with *message*."""
+        self._loading_overlay.show_with_message(message)
+
+    def hide_loading(self):
+        """Hide the loading overlay."""
+        self._loading_overlay.hide_overlay()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._loading_overlay.setGeometry(self.rect())
         
 
 if __name__ == "__main__":

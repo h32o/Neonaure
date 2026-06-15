@@ -29,7 +29,7 @@ class AppWindow(QMainWindow):
 def main():
     app = QApplication(sys.argv)
     window = AppWindow()
-    controller = Controller(Model((8,8), "Grille8"), window)
+    controller = Controller(Model((8,8), "selima"), window)
     sys.exit(app.exec())
 
 if __name__ == "__main__":

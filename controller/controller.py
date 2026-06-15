@@ -5,6 +5,26 @@ from view.menu_window import MenuWindow
 from model.solveur import Solver
 from PyQt6.QtWidgets import QApplication
 from model.Grid_Generator import generation
+from PyQt6.QtCore import QThread, pyqtSignal
+
+class _GenerationWorker(QThread):
+    grid_ready = pyqtSignal(object)
+
+    def __init__(self, row, col, pourcentage_given, parent=None):
+        super().__init__(parent)
+        self.row = row
+        self.col = col
+        self.pourcentage_given = pourcentage_given
+
+    def run(self):
+        nb_pattern = (self.row * self.col) // 3
+        try:
+            result = generation(self.row, self.col, nb_pattern,
+                                self.pourcentage_given)
+        except Exception as exc:
+            logging.error(f"Generation error: {exc}")
+            result = None
+        self.grid_ready.emit(result)
 
 class Controller:
     def __init__(self, model, app_window):
@@ -16,8 +36,10 @@ class Controller:
 
         self._historic = []
         self._historic_redo = []
+        self._gen_worker = None
         
         self._app_window.showFullScreen()
+
 
         # Start on menu
         self._app_window.stack.setCurrentIndex(0)
@@ -85,11 +107,28 @@ class Controller:
         self._init_view_from_model()
     
     def handle_generate(self, row : int = 5, col: int = 5, pourcentage_given: float = 0.35):
-        nb_pattern = (row * col) // 3
-        new_grid = generation(row, col, nb_pattern, pourcentage_given)
-        if new_grid is None:
-            print("Generation failed : ... retry")
+        # If a generation is already running, ignore the request
+        if self._gen_worker is not None and self._gen_worker.isRunning():
             return
+
+        # Show loading overlay
+        self._game_page.show_loading("Generating grid\u2026")
+
+        # Launch worker thread
+        self._gen_worker = _GenerationWorker(
+            row, col, pourcentage_given, parent=self._app_window
+        )
+        self._gen_worker.grid_ready.connect(self._on_generation_done)
+        self._gen_worker.start()
+
+    def _on_generation_done(self, new_grid):
+        """Called on the main thread when the worker finishes."""
+        self._game_page.hide_loading()
+
+        if new_grid is None:
+            print("Generation failed : all attempts exhausted")
+            return
+
         self._model = new_grid
         self._historic.clear()
         self._game_page.rebuild_grid(self._model._row, self._model._column)
@@ -177,7 +216,7 @@ class Controller:
                     borders["bottom"], borders["left"])
         
     def _load_game(self) : 
-        self._model.from_json("examples/grille2.json")
+        self._model.from_json("examples/selima.json")
         self._init_view_from_model()
     
     def start_quit(self):
