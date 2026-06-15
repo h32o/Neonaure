@@ -9,82 +9,94 @@ def generation(row, col, nb_pattern, pourcentage_given):
     moore_dirs = [(-1, -1), (-1, 0), (-1, 1),
                   (0, -1),           (0, 1),
                   (1, -1),  (1, 0),  (1, 1)]
-    ortho_dirs = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+    """
+    ! Visual représentation
+    ! (-1, -1), (-1, 0), (-1, 1 )    ↖ ↑ ↗
+    ! ( 0,-1)        ( 0,1)          ← · →
+    ! (1,-1) ( 1,0) ( 1,1)           ↙ ↓ ↘
+    """
 
-    for attempt in range(500):
+    ortho_dirs = [(-1, 0), #! ↑
+                 (1, 0),   #! ↓
+                 (0, -1),  #! ←
+                 (0, 1)]   #! →
 
+    for _ in range(500):
         MAX_VAL = 4
         grid_vals = [[0] * col for _ in range(row)]
 
-        def fill_grid(pos):
+        def fill(pos):
             if pos == row * col:
                 return True
+
             r, c = divmod(pos, col)
-            used = set()
-            for dr, dc in moore_dirs:
-                nr, nc = r + dr, c + dc
-                if 0 <= nr < row and 0 <= nc < col:
-                    used.add(grid_vals[nr][nc])
-            available = [v for v in range(1, MAX_VAL + 1) if v not in used]
-            random.shuffle(available)
-            for v in available:
+            used = {grid_vals[r + dr][c + dc]
+                    for dr, dc in moore_dirs
+                    if 0 <= r + dr < row and 0 <= c + dc < col}
+            avail = [v for v in range(1, MAX_VAL + 1) if v not in used]
+            random.shuffle(avail)
+
+            for v in avail:
                 grid_vals[r][c] = v
-                if fill_grid(pos + 1):
+                if fill(pos + 1):
                     return True
                 grid_vals[r][c] = 0
             return False
 
-        if not fill_grid(0):
-            continue 
+        if not fill(0):
+            continue
 
-        assigned  = [[-1] * col for _ in range(row)]
-        pat_groups = {}   # pid -> list[(r, c)]
+
+        assigned = [[-1] * col for _ in range(row)]
+        pat_groups = {}
         pid = 1
 
         cells_list = [(r, c) for r in range(row) for c in range(col)]
         random.shuffle(cells_list)
 
         for sr, sc in cells_list:
+
             if assigned[sr][sc] != -1:
                 continue
-
             target = random.choice([2, 2, 3])
-            group      = [(sr, sc)]
+            group = [(sr, sc)]
             group_vals = {grid_vals[sr][sc]}
             assigned[sr][sc] = pid
-            frontier   = [(sr, sc)]
+            frontier = [(sr, sc)]
 
             while len(group) < target and frontier:
+
                 r2, c2 = random.choice(frontier)
-                candidates = []
-                for dr, dc in ortho_dirs:
-                    nr, nc = r2 + dr, c2 + dc
-                    if (0 <= nr < row and 0 <= nc < col
-                            and assigned[nr][nc] == -1
-                            and grid_vals[nr][nc] not in group_vals):
-                        candidates.append((nr, nc))
-                if candidates:
-                    nr, nc = random.choice(candidates)
+                cands = [(r2 + dr, c2 + dc) for dr, dc in ortho_dirs
+                         if 0 <= r2 + dr < row and 0 <= c2 + dc < col
+                         and assigned[r2 + dr][c2 + dc] == -1
+                         and grid_vals[r2 + dr][c2 + dc] not in group_vals]
+
+                if cands:
+                    nr, nc = random.choice(cands)
                     assigned[nr][nc] = pid
                     group.append((nr, nc))
                     group_vals.add(grid_vals[nr][nc])
                     frontier.append((nr, nc))
                 else:
                     frontier.remove((r2, c2))
+
+      
             if len(group) == 1:
                 sr0, sc0 = group[0]
                 v0 = grid_vals[sr0][sc0]
-                dirs_copy = list(ortho_dirs)
-                random.shuffle(dirs_copy)
                 merged = False
-                for dr, dc in dirs_copy:
+                dirs = list(ortho_dirs)
+                random.shuffle(dirs)
+                
+                for dr, dc in dirs:
                     nr, nc = sr0 + dr, sc0 + dc
                     if 0 <= nr < row and 0 <= nc < col and assigned[nr][nc] != -1:
-                        npid   = assigned[nr][nc]
-                        ngroup = pat_groups[npid]
-                        nvals  = {grid_vals[r][c] for r, c in ngroup}
-                        if len(ngroup) < 3 and v0 not in nvals:
-                            ngroup.append((sr0, sc0))
+                        npid = assigned[nr][nc]
+                        ng = pat_groups[npid]
+                        nv = {grid_vals[r][c] for r, c in ng}
+                        if len(ng) < 3 and v0 not in nv:
+                            ng.append((sr0, sc0))
                             assigned[sr0][sc0] = npid
                             merged = True
                             break
@@ -94,59 +106,40 @@ def generation(row, col, nb_pattern, pourcentage_given):
             pat_groups[pid] = group
             pid += 1
 
-        # Vérifications d'intégrité
+
         if any(assigned[r][c] == -1 for r in range(row) for c in range(col)):
             continue
         if any(len(g) == 1 for g in pat_groups.values()):
             continue
-        valid_pats = all(
-            len({grid_vals[r][c] for r, c in g}) == len(g)
-            for g in pat_groups.values()
-        )
-        if not valid_pats:
+
+        valid = all(len({grid_vals[r][c] for r, c in g}) == len(g)
+                     for g in pat_groups.values())
+        if not valid:
             for p_id, group in pat_groups.items():
-                valeurs_actuelles = sorted(set(grid_vals[r][c] for r, c in group))
-                correspondance = {ancien: nouveau for nouveau, ancien in enumerate(valeurs_actuelles, start=1)}
+                cur = sorted({grid_vals[r][c] for r, c in group})
+                mapping = {old: new for new, old in enumerate(cur, 1)}
                 for r, c in group:
-                    grid_vals[r][c] = correspondance[grid_vals[r][c]]
-
-            moore_ok = True
-            for r in range(row):
-                for c in range(col):
-                    for dr, dc in moore_dirs:
-                        nr, nc = r + dr, c + dc
-                        if 0 <= nr < row and 0 <= nc < col:
-                            if grid_vals[r][c] == grid_vals[nr][nc]:
-                                moore_ok = False
-                                break
-                    if not moore_ok:
-                        break
-                if not moore_ok:
-                    break
-
-            if not moore_ok:
+                    grid_vals[r][c] = mapping[grid_vals[r][c]]
+   
+            ok = all(
+                grid_vals[r][c] != grid_vals[r + dr][c + dc]
+                for r in range(row) for c in range(col)
+                for dr, dc in moore_dirs
+                if 0 <= r + dr < row and 0 <= c + dc < col
+            )
+            if not ok:
                 continue
-        final_grid = Grid((row, col), "gen")
-        final_grid._cell     = [[None] * col for _ in range(row)]
-        final_grid._patterns = {}
 
-        for p_id, group in pat_groups.items():
-            pat = Pattern(p_id, [])
-            final_grid._patterns[p_id] = pat
-            for r, c in group:
-                cell = Cell(r, c, grid_vals[r][c], p_id)
-                final_grid._cell[r][c] = cell
-                pat.cells.append(cell)
+        grid = Grid((row, col), "gen")
+        grid.values      = np.array(grid_vals, dtype=int)
+        grid.pattern_ids = np.array(assigned, dtype=int)
+        grid.given       = np.zeros((row, col), dtype=bool)
 
-        toutes = [final_grid._cell[r][c] for r in range(row) for c in range(col)]
-        random.shuffle(toutes)
-        nb_garder = max(1, int(len(toutes) * pourcentage_given))
-        for i, cell in enumerate(toutes):
-            if i < nb_garder:
-                cell.set_given(True)
+        all_cells = [(r, c) for r in range(row) for c in range(col)]
+        random.shuffle(all_cells)
+        nb_keep = max(1, int(len(all_cells) * pourcentage_given))
+        for i, (r, c) in enumerate(all_cells):
+            if i < nb_keep:
+                grid.given[r, c] = True
             else:
-                cell.set_given(False)
-                cell.set_value(0)
-
-        return final_grid
-    return None
+                grid.values[r, c] = 0
