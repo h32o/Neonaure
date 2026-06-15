@@ -1,0 +1,20 @@
+#! Git ignore inspired by https://github.com/github/gitignore/blob/main/Python.gitignore
+
+__pycache__/
+
+tempCodeRunnerFile.py
+
+.env
+.venv
+
+.pyc
+
+whl
+.whl
+
+.buildozer
+*.apk
+
+*.log
+
+deployment
