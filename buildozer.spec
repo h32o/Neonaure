@@ -5,7 +5,7 @@ package.domain = org.Neonaure
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,qml,js,json
 version = 0.1
-requirements = python3==3.11.11,hostpython3==3.11.11, shiboken6,PySide6
+requirements = python3==3.11.11,hostpython3==3.11.11, shiboken6,PySide6, numpy
 orientation = portrait
 osx.python_version = 3
 osx.kivy_version = 1.9.1
