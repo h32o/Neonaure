@@ -80,8 +80,7 @@ class Controller:
 
     def handle_solve(self):
         self._historic.append(self._model.get_state())
-        solver = Solver(self._model)
-        solver.solve()
+        Solver(self._model).solve()
         if self._model.is_solved():
             print("nickel")
         self._init_view_from_model()
@@ -137,38 +136,24 @@ class Controller:
         self._historic.append(self._model.get_state())
         value = int(text) if text else 0
         self._model.set_value((row, col), value)
-        
+
         self._check_cell_error(row, col)
 
-        for neighbor in self._model.get_neighbors(row, col):
-            nr, nc = neighbor.get_row(), neighbor.get_column()
-            neighbor_ok = self._model.check_neighbor_constraint(nr, nc)
-            pattern_id = self._model.get_cell((nr, nc)).get_pattern_id()
-            pattern_ok = self._model.check_pattern_constraint(pattern_id)
-            self._game_page.update_cell_error(nr, nc,not neighbor_ok or not pattern_ok)
+        for nr, nc in self._model.get_neighbors(row, col):
+            n_ok = self._model.check_neighbor_constraint(nr, nc)
+            p_ok = self._model.check_pattern_constraint(self._model.pattern_ids[nr, nc])
+            self._game_page.update_cell_error(nr, nc, not n_ok or not p_ok)
 
-        pattern_id = self._model.get_cell((row, col)).get_pattern_id()
-        pattern = self._model.get_pattern(pattern_id)
-        for cell in pattern.get_cells():
-            self._check_cell_error(cell.get_row(), cell.get_column())
+        for cr, cc in self._model.pattern_cells(self._model.pattern_ids[row, col]):
+            self._check_cell_error(cr, cc)
 
         if self._model.is_solved():
             self._game_page.show_victory()
 
     def _check_cell_error(self, row, col):
         neighbor_ok = self._model.check_neighbor_constraint(row, col)
-
-        cell = self._model.get_cell((row, col))
-        cell_val = cell.get_value()
-        pattern_ok = True
-        if cell_val != 0:
-            pattern = self._model.get_pattern(cell.get_pattern_id())
-            count = sum(1 for c in pattern.get_cells() if c.get_value() == cell_val)
-            if count > 1:
-                pattern_ok = False
-
-        is_error = not neighbor_ok or not pattern_ok
-        self._game_page.update_cell_error(row, col, is_error)
+        pattern_ok  = not self._model.cell_has_pattern_duplicate(row, col)
+        self._game_page.update_cell_error(row, col, not neighbor_ok or not pattern_ok)
         
     def refresh_view(self):
         for r in range(self._model._row):
