@@ -1,4 +1,4 @@
-# SAÉ Graphes-IHM — Néonaure
+<h1 align="center">SAÉ Graphes-IHM — Néonaure</h1>
 
 <p align="center">
   <a href="#français">🇫🇷 Français</a> | <a href="#english">🇬🇧 English</a>
