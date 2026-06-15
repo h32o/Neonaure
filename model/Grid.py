@@ -2,6 +2,7 @@ from model.Cell import Cell
 from model.Pattern import Pattern
 from tools.json_handler import JSONLoader
 import json
+import numpy as np
 import numpy.typing as npt
 from typing import List, Tuple, Set, Dict, Any, Union
 
