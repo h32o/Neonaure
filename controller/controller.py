@@ -5,9 +5,9 @@ from tools.json_handler import JSONLoader
 from view.main_window import MainWindow
 from view.menu_window import MenuWindow
 from model.solveur import Solver
-from PyQt6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication
 from model.Grid_Generator import generation
-from PyQt6.QtCore import QThread, pyqtSignal
+from PySide6.QtCore import QThread, Signal as  pyqtSignal
 
 class _GenerationWorker(QThread):
     grid_ready = pyqtSignal(object)

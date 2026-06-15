@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QMessageBox, QPushButton, QHBoxLayout, QLabel,QDialog,QFormLayout,QDialogButtonBox,QDoubleSpinBox,QSpinBox,QFileDialog, QGraphicsOpacityEffect
-from PyQt6.QtCore import pyqtSignal, QTimer, Qt, QPropertyAnimation
-from PyQt6.QtGui import QKeySequence,QPixmap,QPainter,QColor
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QMessageBox, QPushButton, QHBoxLayout, QLabel,QDialog,QFormLayout,QDialogButtonBox,QDoubleSpinBox,QSpinBox,QFileDialog, QGraphicsOpacityEffect
+from PySide6.QtCore import Signal as pyqtSignal, QTimer, Qt, QPropertyAnimation
+from PySide6.QtGui import QKeySequence,QPixmap,QPainter,QColor
 
 class LoadingOverlay(QWidget):
     """Semi-transparent overlay with a message and pulsing dots."""

@@ -8,9 +8,9 @@ from pathlib import Path; import sys; ROOT = next(d for d in [Path(__file__).res
 
 import sys
 import os
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QMessageBox, QPushButton, QHBoxLayout, QLabel,QDialog,QFormLayout,QDialogButtonBox,QDoubleSpinBox,QSpinBox,QFileDialog, QGraphicsOpacityEffect
-from PyQt6.QtCore import pyqtSignal, QTimer, Qt, QPropertyAnimation
-from PyQt6.QtGui import QKeySequence,QPixmap,QPainter,QColor
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QMessageBox, QPushButton, QHBoxLayout, QLabel,QDialog,QFormLayout,QDialogButtonBox,QDoubleSpinBox,QSpinBox,QFileDialog, QGraphicsOpacityEffect
+from PySide6.QtCore import Signal as pyqtSignal, QTimer, Qt, QPropertyAnimation
+from PySide6.QtGui import QKeySequence,QPixmap,QPainter,QColor
 from .components.grid_widget import GridWidget
 from .components.number_palette import NumberPalette
 from .components.loading_overlay import LoadingOverlay

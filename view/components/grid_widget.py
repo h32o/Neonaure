@@ -5,8 +5,8 @@ This widget is the main widget of the game, it contains the grid of cells.
 """
 from pathlib import Path; import sys; ROOT = next(d for d in [Path(__file__).resolve()] + list(Path(__file__).resolve().parents) if (d / ".root.cfg").exists()); sys.path.insert(0, str(ROOT))
 
-from PyQt6.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QSizePolicy
-from PyQt6.QtCore import Qt, pyqtSignal, QSize
+from PySide6.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QSizePolicy
+from PySide6.QtCore import Qt, Signal as pyqtSignal, QSize
 from .cell_widget import CellWidget
 
 class GridWidget(QWidget):
