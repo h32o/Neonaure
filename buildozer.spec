@@ -26,7 +26,7 @@ p4a.branch = master
 android.permissions = android.permission.WRITE_EXTERNAL_STORAGE, android.permission.INTERNET
 android.add_jars = /home/h/Neonaure/deployment/jar/PySide6/jar/Qt6AndroidBindings.jar,/home/h/Neonaure/deployment/jar/PySide6/jar/Qt6Android.jar
 p4a.extra_args = --qt-libs=Widgets,Core,Gui --load-local-libs=plugins_platforms_qtforandroid --init-classes=
-icon.filename = /mnt/c/Users/H/Documents/SAE IHM/Neonaure/.venv/lib/python3.11/site-packages/PySide6/scripts/deploy_lib/pyside_icon.jpg
+icon.filename = /home/h/Neonaure/assets/misc/images/logo-neonaur.png
 
 [buildozer]
 log_level = 2

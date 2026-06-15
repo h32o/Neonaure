@@ -4,8 +4,6 @@ Module defining the main window of the Néonaure application.
 Handles the display of the grid, the timer, the undo/redo buttons, the solve button, and the settings panel.
 
 """
-from pathlib import Path; import sys; ROOT = next(d for d in [Path(__file__).resolve()] + list(Path(__file__).resolve().parents) if (d / ".root.cfg").exists()); sys.path.insert(0, str(ROOT))
-
 import sys
 import os
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QMessageBox, QPushButton, QHBoxLayout, QLabel,QDialog,QFormLayout,QDialogButtonBox,QDoubleSpinBox,QSpinBox,QFileDialog, QGraphicsOpacityEffect

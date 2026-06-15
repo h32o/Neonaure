@@ -1,6 +1,4 @@
 
-from pathlib import Path; import sys; ROOT = next(d for d in [Path(__file__).resolve()] + list(Path(__file__).resolve().parents) if (d / ".root.cfg").exists()); sys.path.insert(0, str(ROOT))
-
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QSizePolicy, QFrame
 from PySide6.QtCore import Qt, QMimeData, Signal as pyqtSignal, QSize
 from PySide6.QtGui import QDrag, QPainter, QColor, QFont, QPen

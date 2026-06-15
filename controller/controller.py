@@ -1,5 +1,3 @@
-from pathlib import Path; import sys; ROOT = next(d for d in [Path(__file__).resolve()] + list(Path(__file__).resolve().parents) if (d / ".root.cfg").exists()); sys.path.insert(0, str(ROOT))
-
 import logging, random
 from tools.json_handler import JSONLoader
 from view.main_window import MainWindow
