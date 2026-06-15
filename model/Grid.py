@@ -64,6 +64,10 @@ class Grid:
     def get_cell(self, coord):
         return Cell(self, coord[0], coord[1])
 
+    def get_pattern(self, pid):
+        cells = [self.get_cell((r, c)) for r, c in self.pattern_cells(pid)]
+        return Pattern(pid, cells)
+
     def set_value(self, coord, val) -> None :
         self.values[coord[0], coord[1]] = val
 
@@ -162,13 +166,13 @@ class Grid:
 
     def to_json(self, path) -> None:
         d = {}
-    
+
         for pid in sorted(self.pattern_ids_set()):
             d[f"motif{pid}"] = [
                 [int(c), int(r), int(self.values[r, c]) if self.given[r, c] else 0]
                 for r, c in self.pattern_cells(pid)
             ]
-    
+
         with open(path, "w", encoding="utf-8") as f:
             json.dump(d, f, ensure_ascii=False, indent=2)
 

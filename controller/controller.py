@@ -103,7 +103,7 @@ class Controller:
         self._historic.append(self._model.get_state())
         Solver(self._model).solve()
         if self._model.is_solved():
-            print("nickel")
+            pass
         self._init_view_from_model()
     
     def handle_generate(self, row : int = 5, col: int = 5, pourcentage_given: float = 0.35):
@@ -126,7 +126,7 @@ class Controller:
         self._game_page.hide_loading()
 
         if new_grid is None:
-            print("Generation failed : all attempts exhausted")
+            logging.warning("Generation failed: all attempts exhausted")
             return
 
         self._model = new_grid
@@ -135,41 +135,39 @@ class Controller:
         self._init_view_from_model()
 
     def give_hint(self) -> bool:
+        old_values = self._model.values.copy()
         self._historic.append(self._model.get_state())
-        
+    
         solver = Solver(self._model)
         solver.solve()
-        
-        state = self._model.get_state()
+    
         hint_cells = []
-        ancient_state = self._historic.pop()
-        for (r, c), (val, given, pid) in state.items():
-            if not given and val != 0 and ancient_state[(r,c)][0] == 0:
-                hint_cells.append((r, c, val))
-        
-        self._model.restore_state(ancient_state)
-        
+        for r in range(self._model._row):
+            for c in range(self._model._column):
+                if not self._model.given[r, c] and self._model.values[r, c] != 0 and old_values[r, c] == 0:
+                    hint_cells.append((r, c, int(self._model.values[r, c])))
+    
+        self._model.restore_state(self._historic.pop())
+    
         if hint_cells:
             r, c, val = random.choice(hint_cells)
-            print(f"Hint: ({r},{c}) = {val}")
             self._historic.append(self._model.get_state())
             self._model.set_value((r, c), val)
             self._game_page.update_cell(r, c, val)
             self._check_cell_error(r, c)
-            for neighbor in self._model.get_neighbors(r, c):
-                self._check_cell_error(neighbor.get_row(), neighbor.get_column())
-            pattern_id = self._model.get_cell((r, c)).get_pattern_id()
-            pattern = self._model.get_pattern(pattern_id)
-            for cell in pattern.get_cells():
-                self._check_cell_error(cell.get_row(), cell.get_column())
-            
+            for nr, nc in self._model.get_neighbors(r, c):
+                self._check_cell_error(nr, nc)
+            pid = self._model.pattern_ids[r, c]
+            for cr, cc in self._model.pattern_cells(pid):
+                self._check_cell_error(cr, cc)
+    
             self._game_page.start_hint_cooldown(60)
-            
+    
             if self._model.is_solved():
                 self._game_page.show_victory()
             return True
         return False
-               
+
     def update_cell_value(self, row, col, text):
         self._historic.append(self._model.get_state())
         value = int(text) if text else 0
