@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QMessageBox, QPu
 from PyQt6.QtCore import pyqtSignal, QTimer, Qt, QPropertyAnimation
 from PyQt6.QtGui import QKeySequence,QPixmap
 from .components.grid_widget import GridWidget
+from .components.number_palette import NumberPalette
 from .settings_window import SettingsWindow
 
 class MainWindow(QWidget):
@@ -149,7 +150,7 @@ class MainWindow(QWidget):
         self.grid_widget.signal_cell_changed.connect(self.signal_cell_changed)
         self.game_layout.addWidget(self.grid_widget, 1)
        
-        
+        # Timer 
         self.timer_label = QLabel("")
         self.timer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.timer_label.setStyleSheet("""
@@ -169,6 +170,11 @@ class MainWindow(QWidget):
 
         self.game_layout.addStretch(0)
 
+        # Drag and drop 
+        self.number_palette = NumberPalette()
+        self.number_palette.setFixedHeight(68)
+        self.game_layout.addWidget(self.number_palette, 0, Qt.AlignmentFlag.AlignHCenter)
+
         self.time_counter = 0
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_timer_display)
@@ -178,7 +184,7 @@ class MainWindow(QWidget):
         self.hint_cooldown = 0
         self.hint_timer.timeout.connect(self.update_hint_cooldown)
         
-        # ── Bottom bar ──
+        # Bottom bar 
         nav_button_style = """
         QPushButton {
             background-color: #2A2A35;
