@@ -38,15 +38,21 @@ class CellWidget(QLineEdit):
             color: black;
             font-weight : bold;          
         """)
-        self.row = line
-        self.column = column
-        self.is_error = False
+
+        self.row : int  = line
+        self.column : int = column
+        self.is_error : bool = False
         
     
-        self.bold_borders = {'top': "0.5px solid lightgray",
+        # Borders 
+        self.bold_borders : dict = {'top': "0.5px solid lightgray",
                              'right': "0.5px solid lightgray", 
                              'bottom': "0.5px solid lightgray", 
                              'left': "0.5px solid lightgray"} 
+
+        # Add Drag and drop support to cell 
+        self.setAcceptDrops(True)
+
         
     def set_borders(self, top_bold, right_bold, bottom_bold, left_bold):
         """
@@ -141,3 +147,16 @@ class CellWidget(QLineEdit):
         self.setReadOnly(False)
         self.is_error = False
         self._apply_cell_style()
+
+    
+    def dropEvent(self, event):
+        """Handle the drop: set the number or erase the cell."""
+        mime = event.mimeData()
+        if self.isReadOnly():
+            return
+
+        if mime.hasFormat("application/x-suguru-number"):
+            number = mime.data("application/x-suguru-number").data().decode()
+            self.setText(number)
+        elif mime.hasFormat("application/x-suguru-erase"):
+            self.setText("")
