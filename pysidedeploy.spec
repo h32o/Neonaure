@@ -25,7 +25,7 @@ project_dir = .
 python_path = /mnt/c/Users/H/Documents/Neonaure/.venv/bin/python3.11
 
 # python packages to install
-packages = Nuitka==4.0
+packages = Nuitka==4.0, numpy
 
 # buildozer = for deploying Android application
 android_packages = buildozer==1.5.0,cython==0.29.33

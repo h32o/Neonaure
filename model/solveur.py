@@ -5,54 +5,38 @@ import os
 
 
 class Solver():
-    def __init__(self, grid : Grid):
-        self._grid : Grid = grid
-    
-    def get_domain(self,cell : Cell) -> list:
-        
-        pattern = self._grid.get_pattern(cell.get_pattern_id())
-        value_list : list = [i for i in range(1,pattern.size + 1)]
-        
-        neighbor_values = set(cells.get_value() for cells in self._grid.get_neighbors(cell.get_row(),cell.get_column()))
-        
-        value_set = set(value_list) - pattern.current_values - neighbor_values
-        return list(value_set)
-    
-    def choose_cell(self) -> Cell:
-        
-        minimal_cell : Cell = None
-        minimal_domain : int = 10
-        
-        for cells in self._grid.get_pattern_dict().values():
-            for cell in cells.get_cells():
-                if cell.is_empty():
-                    if len(self.get_domain(cell)) < minimal_domain:
-                        minimal_domain = len(self.get_domain(cell))
-                        minimal_cell = cell
-                
-        return minimal_cell
-            
+    def __init__(self, grid: Grid):
+        self.g = grid
+
+    def get_domain(self, r, c):
+        pid = self.g.pattern_ids[r, c]
+        used = self.g.pattern_values(pid) | self.g.neighbor_values(r, c)
+        return [v for v in range(1, self.g.pattern_size(pid) + 1) if v not in used]
+
+    def choose_cell(self):
+        best, best_len = None, 10
+        for r in range(self.g._row):
+            for c in range(self.g._column):
+                if self.g.values[r, c] == 0:
+                    d = len(self.get_domain(r, c))
+                    if d < best_len:
+                        best, best_len = (r, c), d
+        return best
+
     def solve(self) -> bool:
-        if self._grid.is_solved():
+        if self.g.is_solved():
             return True
-        
-        cell_to_fill = self.choose_cell()
-        
-        if cell_to_fill == None:
+        cell = self.choose_cell()
+        if cell is None:
             return False
-        
-        domain = self.get_domain(cell_to_fill)
-        if domain == [] : 
-            return False
-        
-        for each_value in domain:
-            cell_to_fill.set_value(each_value)
-            
+        r, c = cell
+        for v in self.get_domain(r, c):
+            self.g.values[r, c] = v
             if self.solve():
                 return True
-            cell_to_fill.set_value(0)
-        
+            self.g.values[r, c] = 0
         return False
+
 
 if __name__ == "__main__":
     

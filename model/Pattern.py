@@ -2,8 +2,6 @@ from model.Cell import Cell
 
 
 class Pattern():
-
-
     """
     classe motif : réuni plusieurs case dans un motif. Les nombres
     """
@@ -15,7 +13,6 @@ class Pattern():
     @property
     def size(self) -> int:
         return len(self.cells)
-
 
     @property
     def expected_values(self) -> set:

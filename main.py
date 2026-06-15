@@ -1,5 +1,7 @@
+from pathlib import Path; import sys; ROOT = next(d for d in [Path(__file__).resolve()] + list(Path(__file__).resolve().parents) if (d / ".root.cfg").exists()); sys.path.insert(0, str(ROOT))
+
 import sys
-from PySide6.QtWidgets import QApplication, QMainWindow, QStackedWidget
+from PyQt6.QtWidgets import QApplication, QMainWindow, QStackedWidget
 from view.menu_window import MenuWindow
 from view.main_window import MainWindow as GamePage
 from controller import Controller

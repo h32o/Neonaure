@@ -13,8 +13,9 @@ whl
 .whl
 
 .buildozer
-
-*.log
 *.apk
 
+*.log
+
 deployment
+PyQt6

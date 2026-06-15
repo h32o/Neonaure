@@ -22,42 +22,37 @@ class Cell():
 
 
     """
-    def __init__(self,row : int,column :int,val : int,motif_id : int):
-
-        self._row : int = row
-        self._column : int = column
-        self._value : int = val
-        self._given : bool = True if val != 0 else False
-        self._motif_id : int = motif_id
-
+    def __init__(self, grid, row: int, col: int):
+        self._grid = grid
+        self._row = row
+        self._col = col
 
     def is_empty(self) -> bool:
-        return False if self._value != 0 else True
+        return self._grid.values[self._row, self._col] == 0
 
-    
     def get_row(self) -> int:
         return self._row
 
     def get_column(self) -> int:
-        return self._column
+        return self._col
 
     def get_value(self) -> int:
-        return self._value
+        return int(self._grid.values[self._row, self._col])
 
     def get_given(self) -> bool:
-        return self._given
+        return bool(self._grid.given[self._row, self._col])
 
     def get_pattern_id(self) -> int:
-        return self._motif_id
+        return int(self._grid.pattern_ids[self._row, self._col])
 
-    def set_value(self,values : int) -> None:
-        self._value = values
+    def set_value(self, val: int) -> None:
+        self._grid.values[self._row, self._col] = val
 
-    def set_pattern_id(self,id : int) -> None:
-        self._motif_id = id
+    def set_pattern_id(self, pid: int) -> None:
+        self._grid.pattern_ids[self._row, self._col] = pid
 
-    def set_given(self,boolean : bool) -> None:
-        self._given = boolean
+    def set_given(self, flag: bool) -> None:
+        self._grid.given[self._row, self._col] = flag
 
     def __str__(self) -> str:
-        return f"{self.get_row()},{self.get_column()},{self.get_given()},{self.get_pattern_id()},{self.get_value()}"
+        return f"{self._row},{self._col},{self.get_given()},{self.get_pattern_id()},{self.get_value()}"

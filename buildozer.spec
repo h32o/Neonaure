@@ -3,7 +3,7 @@ title = Neonaure
 package.name = Neonaure
 package.domain = org.Neonaure
 source.dir = .
-source.include_exts = py,png,jpg,kv,atlas,qml,js,json
+source.include_exts = py,png,jpg,kv,atlas,qml,js,json, cfg
 version = 0.1
 requirements = python3==3.11.11,hostpython3==3.11.11, shiboken6,PySide6, numpy
 orientation = portrait
@@ -12,6 +12,7 @@ osx.kivy_version = 1.9.1
 fullscreen = 0
 android.archs = arm64-v8a
 android.allow_backup = True
+android.minapi = 24
 ios.kivy_ios_url = https://github.com/kivy/kivy-ios
 ios.kivy_ios_branch = master
 ios.ios_deploy_url = https://github.com/phonegap/ios-deploy
