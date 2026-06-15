@@ -1,6 +1,7 @@
 from model.Grid import Grid
 from model.Cell import Cell
 from model.Pattern import Pattern
+import numpy as np
 import random
 
 
@@ -88,7 +89,7 @@ def generation(row, col, nb_pattern, pourcentage_given):
                 merged = False
                 dirs = list(ortho_dirs)
                 random.shuffle(dirs)
-                
+
                 for dr, dc in dirs:
                     nr, nc = sr0 + dr, sc0 + dc
                     if 0 <= nr < row and 0 <= nc < col and assigned[nr][nc] != -1:
