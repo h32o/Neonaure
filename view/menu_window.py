@@ -45,7 +45,7 @@ class MenuWindow(QWidget):
         main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         logo = QLabel()
-        pixmap = QPixmap("assets/img/logo-neonaur.png").scaled(QSize(200,200), Qt.AspectRatioMode.KeepAspectRatio)
+        pixmap = QPixmap("assets/misc/images/logo-neonaur.png").scaled(QSize(200,200), Qt.AspectRatioMode.KeepAspectRatio)
         logo.setPixmap(pixmap)
         main_layout.addWidget(logo)
         play_button = QPushButton("Play")

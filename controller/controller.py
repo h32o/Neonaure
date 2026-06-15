@@ -216,7 +216,7 @@ class Controller:
                     borders["bottom"], borders["left"])
         
     def _load_game(self) : 
-        self._model.from_json("examples/selima.json")
+        self._model.from_json("grille2.json")
         self._init_view_from_model()
     
     def start_quit(self):
